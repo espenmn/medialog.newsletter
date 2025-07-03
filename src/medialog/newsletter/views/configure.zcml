@@ -1,0 +1,18 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="medialog.newsletter">
+
+ <!-- -*- extra stuff goes here -*- -->
+
+  <browser:page
+    name="news-letter-view"
+    for="NewsLetter"
+    class=".news_letter_view.NewsLetterView"
+    template="news_letter_view.pt"
+    permission="zope2.View"
+    layer="medialog.newsletter.interfaces.IMedialogNewsletterLayer"
+    />
+
+</configure>
