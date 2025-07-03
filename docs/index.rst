@@ -1,0 +1,5 @@
+===================
+medialog.newsletter
+===================
+
+User documentation
