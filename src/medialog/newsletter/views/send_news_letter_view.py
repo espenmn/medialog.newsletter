@@ -127,8 +127,8 @@ class SendNewsLetterView(BrowserView):
             if thumbnail:
                 image_html = f"""
                 <div style="padding: 0; margin: 0.5rem 0">
-                    <figure>
-                        <img style="margin: 1rem0 0.5rem" 
+                    <figure style="padding: 0; margin:0">
+                        <img style="margin: 1rem 0 0.5rem" 
                              src="{thumbnail.url}" width="{thumbnail.width}" height="{thumbnail.height}" loading="lazy"/>
                         <figcaption style="color: #777;">{obj.image_caption or ''}</figcaption>
                     </figure>
