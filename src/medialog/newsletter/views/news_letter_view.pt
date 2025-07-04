@@ -52,7 +52,7 @@
             <article tal:define="obj item/getObject">
 
 
-              <div class="imagediv" tal:define="scales obj/@@images; 
+              <div class="newsletter_imagediv" tal:define="scales obj/@@images; 
                     thumbnail python: scales.scale('image', width=600);">
                 <figure>
                   <img style="margin-top:1rem; margin-bottom: 0.5rem" tal:condition="thumbnail" tal:attributes="src thumbnail/url;
