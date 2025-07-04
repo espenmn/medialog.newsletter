@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+## Brevo installs
+# from __future__ import print_function
+# import time
+# import brevo_python
+# from brevo_python.rest import ApiException
+# from pprint import pprint
+
 # from medialog.newsletter import _
 from Products.Five.browser import BrowserView
 from zope.interface import Interface
@@ -28,6 +35,7 @@ from zope.component import getMultiAdapter
 # from plone.app.layout.viewlets.common import ViewletBase
 
 
+
 class ISendNewsLetterView(Interface):
     """ Marker Interface for ISendNewsLetterView"""
 
@@ -45,7 +53,44 @@ class SendNewsLetterView(BrowserView):
         else:
             self.send_testmail() 
         return self.index()
-
+    
+    def construct_message(self):
+        context = self.context
+        # request = self.request
+        # self.email_charset = self.mail_settings.email_charset        
+        title = context.Title()
+        description = context.Description()
+        portal_title = NewsLetterView.portal_title(self)
+        navigation_root_url = NewsLetterView.navigation_root_url(self)
+        img_src = NewsLetterView.get_logo(self)
+        message =  f"""<html>
+                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                <div style="max-width: 600px; margin: 20px auto; 
+                background-color: #ffffff; padding: 20px; 
+                font-size: 15px; line-height: 1.6; color: #333;">                   
+                <a id="logo"
+                    title="{portal_title}"
+                    href="{navigation_root_url}"
+                    title="{portal_title}"
+                >
+                    <img alt="{portal_title}"
+                        title="{portal_title}"
+                        src="{img_src}"
+                    />
+                </a>
+                <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
+                {title}</h1>
+                 <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
+                {description}
+                </div>
+                {context.text.output}
+                <div style="padding: 2rem; margin: 2rem;"><hr/></div>
+                """
+        message += self.more_message() 
+        message +=  u'</div></html>'
+        
+        return message
+    
     def send_groupmail(self):
         context = self.context
         request = self.request
@@ -60,7 +105,8 @@ class SendNewsLetterView(BrowserView):
         for member in usergroup:
             group = api.group.get_groups(user=member)
             receipt = member.getProperty('email')
-            self.send_email(context, request, receipt)
+            fullname = member.getProperty('fullname')
+            self.send_email(context, request, receipt, fullname)
 
         self.request.response.redirect(self.context.absolute_url())
         
@@ -109,7 +155,7 @@ class SendNewsLetterView(BrowserView):
         return html_output
 
 
-    def send_email(self, context, request, receipt):        
+    def send_email(self, context, request, receipt, fullname):        
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
         #interpolator = IStringInterpolator(obj)
@@ -122,40 +168,13 @@ class SendNewsLetterView(BrowserView):
             execute this action"
             )
 
-        self.email_charset = self.mail_settings.email_charset
-        
-        title = context.Title()
-        description = context.Description()
-        ## To do, get all content here
-        # body_html =  u'<html><div class="mailcontent" style="width:600px"><h1 class="documentFirstHeading">\
-        #     ' + title  + u'</h1><div class="documentDescription description">' + description  + u'</div>' + context.text.output 
-        #for 'non HTML mail clients'
-        # transforms = api.portal.get_tool(name='portal_transforms')
-        # stream = transforms.convertTo('text/plain', body_html, mimetype='text/html')
-        # body_plain = stream.getData().strip()
-
-        messages = IStatusMessage(self.request)
-
         # ready to create multipart mail
         try:
-            message =  f"""<html>
-                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-                
-                <div style="max-width: 600px; margin: 20px auto; 
-                background-color: #ffffff; padding: 20px; 
-                font-size: 15px; line-height: 1.6; color: #333;">    
-                <img src="http://ubuntu.local:8605/Plone19/++resource++plone-logo.svg" alt="Plone logo"/>  
-                Our logo
-                <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
-                {title}</h1>
-                 <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
-                {description}
-                </div>
-                {context.text.output}
-                <div style="padding: 2rem; margin: 2rem;"><hr/></div>
-                """
-            message += self.more_message() 
-            message +=  u'</div></html>'
+            self.email_charset = self.mail_settings.email_charset        
+            title = context.Title()
+            description = context.Description()
+            messages = IStatusMessage(self.request)
+            message = self.construct_message()
             outer = MIMEMultipart('alternative')
             outer['To'] = receipt
             # outer['From'] = api.portal.get_registry_record('plone.email_from_address')
@@ -191,8 +210,10 @@ class SendNewsLetterView(BrowserView):
         request = self.request
         member = api.user.get_current()
         receipt = member.getProperty('email')
+        fullname = member.getProperty('fullname')
         if receipt:
-            self.send_email(context, request, receipt)
+            # self.send_with_brevo(context, request, receipt, fullname)
+            self.send_email(context, request, receipt, fullname)
         else:
             messages = IStatusMessage(self.request)
             messages.add(_("cant_send_mail_message",
@@ -202,3 +223,89 @@ class SendNewsLetterView(BrowserView):
                                                  type="error")
             
         self.request.response.redirect(self.context.absolute_url())
+        
+        
+        
+        
+    # #Use brevo api to send email
+    # def send_with_brevo(self, context, request, receipt, fullname): 
+    #     # Configure API key authorization: api-key
+    #     configuration = brevo_python.Configuration()
+    #     configuration.api_key['api-key'] = API_KEY
+    #     # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+    #     # configuration.api_key_prefix['api-key'] = 'Bearer'
+    #     # Configure API key authorization: partner-key
+    #     # configuration = brevo_python.Configuration()
+    #     # configuration.api_key['partner-key'] = API_KEY
+    #     # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+    #     # configuration.api_key_prefix['partner-key'] = 'Bearer'
+        
+    #     ##  Message users with info
+    #     messages = IStatusMessage(self.request)
+
+    #     # create an instance of the API class
+    #     api_instance = brevo_python.TransactionalEmailsApi(brevo_python.ApiClient(configuration))
+    #     # subject = context.Title()
+    #     subject = 'From Brevo'
+    #     sender = {"name":"Brevo","email":"contact@brrevo.com"}
+    #     replyTo = {"name":"Brevo","email":"contact@brevo.com"}
+    #     html_content = self.construct_message()
+    #     # To do, use user id and email 
+    #     # outer['To'] = receipt
+    #     to = [{"email":receipt,"name":fullname}]
+    #     cc = [{"email":"post@medialog.no","name":"Grieg Medialog"}]
+    #     bcc = [{"email":"post@medialog.no","name":"Grieg Medialog"}]
+        
+    #     # Not sure what this is for
+    #     # params = {"parameter":"My param value","subject":"New Subject"}                    
+    #     #Not sure if we need headers
+    #     #headers=headers, 
+        
+    #     send_smtp_email = brevo_python.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=replyTo,
+    #                            html_content=html_content, sender=sender, subject=subject) # SendSmtpEmail | Values to send a transactional email
+
+    #     try:
+    #         # Send a transactional email
+    #         api_response = api_instance.send_transac_email(send_smtp_email)
+    #         # print to test if it works
+    #         pprint(api_response)
+    #         # give feedback to Plone
+    #         # To Do
+    #     except ApiException as e:
+    #         print("Exception when calling TransactionalEmailsApi->send_transac_email: %s\n" % e)
+            
+            
+
+
+
+
+
+
+
+
+###########################################
+
+# Update contact
+# configuration = sib_api_v3_sdk.Configuration()
+# configuration.api_key['api-key'] = 'YOUR_API_KEY'
+# api_instance = sib_api_v3_sdk.ContactsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+
+# create_contact = sib_api_v3_sdk.CreateContact(email="example@example.com", update_enabled = True , attributes= {'FNAME': 'JON', 'LNAME':'DOE'} ,  list_ids=[1])
+
+# try:
+#     api_response = api_instance.create_contact(create_contact)
+#     print(api_response)
+# except ApiException as e:
+#     print("Exception when calling ContactsApi->create_contact: %s\n" % e)
+
+
+
+# our SMTP Settings
+# SMTP Server
+# smtp-relay.brevo.com
+# Port
+# 587
+# Login
+# xxxxxx@smtp-brevo.com
+# xxxx = fredag 4 juni skjermbilde

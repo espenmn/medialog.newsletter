@@ -12,7 +12,28 @@
 
  
         <div class="border-1">
-          <img src="++resource++plone-logo.svg" alt="Plone logo"/>
+          <!-- <img src="++resource++plone-logo.svg" alt="Plone logo"/> -->
+          <!-- ${view/get_logo} -->
+
+          <a id="logo"
+            title="$(view/portal_title}"
+            tal:attributes="
+              href view/navigation_root_url;
+              title view/portal_title;
+            "
+            i18n:attributes="title"
+            i18n:domain="plone"
+          >
+            <img alt=""
+                src="plone-logo.svg"
+                tal:attributes="
+                  alt view/portal_title;
+                  title view/portal_title;
+                  src view/get_logo;
+                "
+            /></a>
+                  
+
           <hr/>
 
           <h1>${context/Title}</h1>
