@@ -79,6 +79,7 @@ class SendNewsLetterView(BrowserView):
                         src="{img_src}"
                     />
                 </a>
+                <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
                 <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
                 {title}</h1>
                  <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
