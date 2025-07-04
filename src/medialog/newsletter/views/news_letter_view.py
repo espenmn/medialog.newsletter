@@ -59,6 +59,7 @@ class NewsLetterView(BrowserView):
         
         items = self.context.portal_catalog(
             portal_type=['News Item'],
+            review_state=['Published', 'published'],
             sort_on='effective',
             sort_order='descending'
         )[:count]
