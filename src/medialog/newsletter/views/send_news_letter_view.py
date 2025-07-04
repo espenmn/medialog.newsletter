@@ -89,7 +89,7 @@ class SendNewsLetterView(BrowserView):
                 <div style="padding: 2rem; margin: 2rem;"><hr/></div>
                 """
         message += self.more_message() 
-        message +=  u'</div><div><div><hr/></div style="text-align:center;"><p style="text-align:center;">Address etc here</p><p>Link to unsubscibe etc</p> </di></html>'
+        message +=  u'</div><div><div><hr/></div><p style="text-align:center;"><b>Address etc here</b></p><p style="text-align:center;">Link to unsubscibe etc</p> </di></html>'
         
         return message
     
