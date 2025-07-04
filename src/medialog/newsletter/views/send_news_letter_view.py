@@ -187,10 +187,15 @@ class SendNewsLetterView(BrowserView):
             html_text = MIMEText(message, 'html', _charset='UTF-8')
             html_part.attach(html_text)
             outer.attach(html_part)
-            mailhost.send(outer.as_string())
-                    
             # # Finally send mail.
-            mailhost.send(outer.as_string())                         
+            # mailhost.send(outer.as_string())  
+            
+            api.portal.send_email(
+                recipient = formataddr((fullname, recipient)),
+                sender = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address)),         
+                subject = title, 
+                body = message
+            )                       
 
             messages.add(_("sent_mail_message",  default=u"Sent to  $email",
                                                  mapping={'email': recipient },
