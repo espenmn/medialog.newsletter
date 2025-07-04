@@ -104,9 +104,9 @@ class SendNewsLetterView(BrowserView):
 
         for member in usergroup:
             group = api.group.get_groups(user=member)
-            receipt = member.getProperty('email')
+            recipient = member.getProperty('email')
             fullname = member.getProperty('fullname')
-            self.send_email(context, request, receipt, fullname)
+            self.send_email(context, request, recipient, fullname)
 
         self.request.response.redirect(self.context.absolute_url())
         
@@ -155,7 +155,7 @@ class SendNewsLetterView(BrowserView):
         return html_output
 
 
-    def send_email(self, context, request, receipt, fullname):        
+    def send_email(self, context, request, recipient, fullname):        
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
         #interpolator = IStringInterpolator(obj)
@@ -176,9 +176,9 @@ class SendNewsLetterView(BrowserView):
             messages = IStatusMessage(self.request)
             message = self.construct_message()
             outer = MIMEMultipart('alternative')
-            outer['To'] = receipt
+            outer['To'] = f'{fullname} <{recipient}>'
             # outer['From'] = api.portal.get_registry_record('plone.email_from_address')
-            outer['From'] = self.mail_settings.email_from_address 
+            outer['From'] = f'{self.mail_settings.email_from_name} <{self.mail_settings.email_from_address}>'
             outer['Subject'] =  title                    
             outer.epilogue = ''
 
@@ -193,14 +193,14 @@ class SendNewsLetterView(BrowserView):
             mailhost.send(outer.as_string())                         
 
             messages.add(_("sent_mail_message",  default=u"Sent to  $email",
-                                                 mapping={'email': receipt },
+                                                 mapping={'email': recipient },
                                                  ),
                                                  type="info")
 
         except:
             messages.add(_("cant_send_mail_message",
                                                  default=u"Could not send to $email",
-                                                 mapping={'email': receipt },
+                                                 mapping={'email': recipient },
                                                  ),
                                                  type="warning")
 
@@ -209,16 +209,16 @@ class SendNewsLetterView(BrowserView):
         context = self.context
         request = self.request
         member = api.user.get_current()
-        receipt = member.getProperty('email')
+        recipient = member.getProperty('email')
         fullname = member.getProperty('fullname')
-        if receipt:
-            # self.send_with_brevo(context, request, receipt, fullname)
-            self.send_email(context, request, receipt, fullname)
+        if recipient:
+            # self.send_with_brevo(context, request, recipient, fullname)
+            self.send_email(context, request, recipient, fullname)
         else:
             messages = IStatusMessage(self.request)
             messages.add(_("cant_send_mail_message",
                                                  default=u"User does not have email",
-                                                 mapping={'email': receipt },
+                                                 mapping={'email': recipient },
                                                  ),
                                                  type="error")
             
@@ -228,7 +228,7 @@ class SendNewsLetterView(BrowserView):
         
         
     # #Use brevo api to send email
-    # def send_with_brevo(self, context, request, receipt, fullname): 
+    # def send_with_brevo(self, context, request, recipient, fullname): 
     #     # Configure API key authorization: api-key
     #     configuration = brevo_python.Configuration()
     #     configuration.api_key['api-key'] = API_KEY
@@ -251,8 +251,8 @@ class SendNewsLetterView(BrowserView):
     #     replyTo = {"name":"Brevo","email":"contact@brevo.com"}
     #     html_content = self.construct_message()
     #     # To do, use user id and email 
-    #     # outer['To'] = receipt
-    #     to = [{"email":receipt,"name":fullname}]
+    #     # outer['To'] = recipient
+    #     to = [{"email":recipient,"name":fullname}]
     #     cc = [{"email":"post@medialog.no","name":"Grieg Medialog"}]
     #     bcc = [{"email":"post@medialog.no","name":"Grieg Medialog"}]
         
