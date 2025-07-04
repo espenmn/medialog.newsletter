@@ -1,18 +1,76 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:metal="http://xml.zope.org/namespaces/metal"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="medialog.newsletter"
-      metal:use-macro="context/main_template/macros/master">
-<body>
-  <metal:content-core fill-slot="content-core">
-  <metal:block define-macro="content-core">
+  xmlns:metal="http://xml.zope.org/namespaces/metal"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
+  <body>
+    <metal:content-core fill-slot="content">
+      <metal:block define-macro="content">
+        <p class="descreet">
+          <b>News Items to include:</b>
+          <span tal:replace="context/itemcount" />
+        </p>
 
-      <h2 i18n:translate="">Sample View</h2>
-      <!--<div tal:replace="view/my_custom_view_method" />-->
-      <!--<div tal:replace="context/my_custom_field" />-->
+ 
+        <div class="border-1">
+          <img src="++resource++plone-logo.svg" alt="Plone logo"/>
+          <hr/>
 
-  </metal:block>
-  </metal:content-core>
-</body>
+          <h1>${context/Title}</h1>
+          <!-- Titel underneath logo. “Nieuwsbrief juli 2025” (Newsletter July 2025) -->
+          <p>${context/Description}</p>
+          <!-- Intro block (text) -->
+          <div tal:replace="structure  context/text/output|None" />
+
+
+
+
+
+          <hr/>
+
+          <div tal:repeat="item view/items|None">
+            <article tal:define="obj item/getObject">
+
+
+              <div class="imagediv" tal:define="scales obj/@@images; 
+                    thumbnail python: scales.scale('image', width=600);">
+                <figure>
+                  <img style="margin-top:1rem; margin-bottom: 0.5rem" tal:condition="thumbnail" tal:attributes="src thumbnail/url;
+                                    width thumbnail/width;
+                                    height thumbnail/height" loading="lazy" />
+                  <figcaption style="color: #777;" tal:content="obj/image_caption" />
+                </figure>
+              </div>
+              <a href="${item/getURL}" style="text-decoration: none">
+                <h3>${item/Title}</h3>
+              </a>
+              <p class="lead documentDescription">${item/Description}</p>
+
+              <div tal:content="structure obj/text/output|None"></div>
+
+              <a class="button btn btn-standalone btn-info" href="${item/getURL}" i18n:translate="">Read More …</a>
+
+            </article>
+            <hr/>
+          </div>
+
+
+          <p>Address and contact information (fixed text, maybe from control pane)</p>
+          <!-- Unsubscribe, only in mailer ?? -->
+
+        </div>
+
+        <div class="border-0">
+          <a class="button btn btn-secondary" href="${context/absolute_url}/@@send-news-letter" i18n:translate="">Send Testmail</a>
+          <a class="button btn btn-warning" href="${context/absolute_url}/@@send-news-letter?groupmail" i18n:translate="">Send Mail to everybody</a>
+        </div>
+
+        <style>
+      .border-0 {border: 0; padding: 2rem 0; width: 600px;  }
+      .border-1 {border: 1px dotted silver; padding: 2rem; width: 600px; background: white}
+      .outer-wrapper {background: whitesmoke}
+      .btn-warning {float: right;}
+        </style>
+      </metal:block>
+    </metal:content-core>
+  </body>
 </html>

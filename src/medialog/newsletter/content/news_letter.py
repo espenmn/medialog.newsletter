@@ -32,6 +32,11 @@ class INewsLetter(model.Schema):
         title=_(u'Text'),
         required=False
     )
+    
+    itemcount = schema.Int(
+        title=_(u'Items to send'),
+        required=False
+    )
 
     # url = schema.URI(
     #     title=_(u'Link'),

@@ -18,4 +18,24 @@ class NewsLetterView(BrowserView):
 
     def __call__(self):
         # Implement your own actions:
+        self.items = self.get_items()
         return self.index()
+    
+    def get_items(self):
+        # TO DO, cache (?)
+        # today = datetime.now()
+        # could consider count from 'last month or similar'
+        count = self.context.itemcount
+        
+        items = self.context.portal_catalog(
+            portal_type=['News Item'],
+            sort_on='effective',
+            sort_order='descending'
+        )[:count]
+        
+        if items:
+            return items
+        
+        # No News Items found
+        return None
+        
