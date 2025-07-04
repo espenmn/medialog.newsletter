@@ -22,6 +22,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
+from email.utils import formataddr
 
 from Products.statusmessages.interfaces import IStatusMessage
 from Products.statusmessages.interfaces import IStatusMessage
@@ -172,14 +173,13 @@ class SendNewsLetterView(BrowserView):
         try:
             self.email_charset = self.mail_settings.email_charset        
             title = context.Title()
-            description = context.Description()
+            # description = context.Description()
             messages = IStatusMessage(self.request)
             message = self.construct_message()
             outer = MIMEMultipart('alternative')
-            outer['To'] = f'{fullname} <{recipient}>'
-            # outer['From'] = api.portal.get_registry_record('plone.email_from_address')
-            outer['From'] = f'{self.mail_settings.email_from_name} <{self.mail_settings.email_from_address}>'
             outer['Subject'] =  title                    
+            outer['To'] = formataddr((fullname, recipient))
+            outer['From'] =  formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
             outer.epilogue = ''
 
             # Attach text part
