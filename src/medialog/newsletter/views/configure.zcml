@@ -7,6 +7,15 @@
  <!-- -*- extra stuff goes here -*- -->
 
   <browser:page
+    name="manage-subscribers-view"
+    for="*"
+    class=".manage_subscribers_view.ManageSubscribersView"
+    template="manage_subscribers_view.pt"
+    permission="zope2.View"
+    layer="medialog.newsletter.interfaces.IMedialogNewsletterLayer"
+    />
+
+  <browser:page
     name="send-news-letter"
     for="medialog.newsletter.content.news_letter.NewsLetter"
     class=".send_news_letter_view.SendNewsLetterView"
