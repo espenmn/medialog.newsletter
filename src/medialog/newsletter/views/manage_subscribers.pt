@@ -1,8 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
   xmlns:metal="http://xml.zope.org/namespaces/metal"
   xmlns:tal="http://xml.zope.org/namespaces/tal"
-  xmlns:i18n="http://xml.zope.org/namespaces/i18n" 
-  i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
   <body>
     <metal:content-core fill-slot="content">
       <metal:block define-macro="content">
@@ -14,18 +13,12 @@
             <form method="post" action="${context/absolute_url}/@@manage-subscribers">
               <div class="form-group xcard">
 
-                <input id="inputEmail" class="form-control" type="email" name="email"
-                       placeholder="Voer uw e-mailadres in"
-                       i18n:attributes="placeholder email_placeholder;"
-                       required />
+                <textarea id="inputEmail" class="form-control" name="email" placeholder="Voer een lijst met e-mailadressen in, één per regel" i18n:attributes="placeholder email_list_placeholder;"
+          required></textarea>
+          <hr/>
+          <button class="button btn btn-primary" type="submit" name="form.subscribed" i18n:translate="button_subscribe">Aanmelden</button>
 
-                <hr/>
-
-                <button class="button btn btn-primary" type="submit" name="form.subscribed"
-                        i18n:translate="button_subscribe">Aanmelden</button>
-
-                <button class="button btn btn-secondary" type="submit" name="form.unsubscribe"
-                        i18n:translate="button_unsubscribe">Afmelden</button>
+                <button class="button btn btn-secondary" type="submit" name="form.unsubscribe" i18n:translate="button_unsubscribe">Afmelden</button>
 
               </div>
             </form>

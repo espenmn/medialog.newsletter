@@ -42,11 +42,13 @@ class SubscribeView(BrowserView):
         messages = IStatusMessage(self.request)
         if email:
             storage = self._get_storage()
-            if email not in storage:
-                storage.append(email)
-                messages.add("Successfully subscribed.", type="info")
-            else:
-                messages.add("Already subscribed.", type="warning")
+            import pdb; pdb.set_trace()
+            for email in email.split():
+                if email not in storage:
+                    storage.append(email)
+                    messages.add("Successfully subscribed.", type="info")
+                else:
+                    messages.add("Already subscribed.", type="warning")
         else:
             messages.add("Email is required.", type="error")
         return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
@@ -55,9 +57,13 @@ class SubscribeView(BrowserView):
         email = self.request.form.get('email', '').strip().lower()
         messages = IStatusMessage(self.request)
         storage = self._get_storage()
-        if email and email in storage:
-            storage.remove(email)
-            messages.add("Unsubscribed successfully.", type="info")
+        if email:
+            for email in email.split():
+                if email and email in storage:
+                    storage.remove(email)
+                    messages.add("Unsubscribed successfully.", type="info")
+                else:
+                    messages.add("Email not found or invalid.", type="warning")
         else:
             messages.add("Email not found or invalid.", type="warning")
         return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
