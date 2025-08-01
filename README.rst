@@ -31,20 +31,23 @@
 medialog.newsletter
 ===================
 
-Send Newsletters from Plone
+Send Newsletters from Plone.
+
 
 Features
 --------
 
-- Can be bullet points
+- Adds a Content Type: Newsletter
+- Newsletter has Title, Description and BodyText
+- Newsletter has setting 'Items to send' (default=4)
+- Newsletter has (button): Send testmail (sends to current user)
+- Newsletter has (buttons): Send to everybody
+- There are two views
+  - @@manage-subscribers: (admin) view to see all subscribers and add / remove user   
+  - @subscribe: view to subscribe / unsubscribe 
 
 
-Examples
---------
-
-This add-on can be seen in action at the following sites:
-- Is there a page on the internet where everybody can see the features?
-
+ 
 
 Documentation
 -------------
@@ -57,7 +60,7 @@ Translations
 
 This product has been translated into
 
-- Klingon (thanks, K'Plai)
+- Dutch (partly)
 
 
 Installation
