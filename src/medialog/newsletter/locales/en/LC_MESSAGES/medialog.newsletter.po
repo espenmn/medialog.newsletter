@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2025-08-01 11:41+0000\n"
-"PO-Revision-Date: 2025-08-01 13:44+0200\n"
+"PO-Revision-Date: 2025-08-01 14:32+0200\n"
 "Last-Translator: espenm <post@medialog.no>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -74,7 +74,7 @@ msgstr ""
 #. Default: "Voer uw e-mailadres in"
 #: ../views/manage_subscribers.pt:17
 msgid "email_placeholder"
-msgstr ""
+msgstr "your email"
 
 #. Default: "Huidige abonnees"
 #: ../views/manage_subscribers.pt:36
