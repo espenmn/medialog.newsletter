@@ -1,0 +1,62 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:metal="http://xml.zope.org/namespaces/metal"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n" 
+  i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
+  <body>
+    <metal:content-core fill-slot="content">
+      <metal:block define-macro="content">
+        <div class="card">
+          <div class="card-body">
+
+            <h1 i18n:translate="heading_subscribe_unsubscribe">Aanmelden/afmelden voor e-maillijst</h1>
+
+            <form method="post" action="${context/absolute_url}/@@manage-subscribers">
+              <div class="form-group xcard">
+
+                <input id="inputEmail" class="form-control" type="email" name="email"
+                       placeholder="Voer uw e-mailadres in"
+                       i18n:attributes="placeholder email_placeholder;"
+                       required />
+
+                <hr/>
+
+                <button class="button btn btn-primary" type="submit" name="form.subscribed"
+                        i18n:translate="button_subscribe">Aanmelden</button>
+
+                <button class="button btn btn-secondary" type="submit" name="form.unsubscribe"
+                        i18n:translate="button_unsubscribe">Afmelden</button>
+
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h3 i18n:translate="heading_current_subscribers">Huidige abonnees</h3>
+            <ul>
+              <tal:loop repeat="email view/subscribers">
+                <li tal:content="email">Email</li>
+              </tal:loop>
+            </ul>
+          </div>
+        </div>
+
+        <style>
+          .border-1 { border: 1px dotted silver; padding: 2rem; background: white }
+          .outer-wrapper { background: whitesmoke }
+          .card { margin-top: 3rem; margin-bottom: 2rem; max-width: 45rem; }
+        </style>
+
+      </metal:block>
+    </metal:content-core>
+  </body>
+</html>
+
+
+
+76 / 5 000
+
+
+
+Huidige abonnees
