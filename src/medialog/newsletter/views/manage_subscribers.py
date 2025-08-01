@@ -10,7 +10,7 @@ from zope.component import getMultiAdapter
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFPlone.utils import getSite
 from email.utils import parseaddr
-
+# from medialog.newsletter.utils import get_subscriber_emails
 
 SUBSCRIBERS_KEY = 'medialog.newsletter.subscribers'
 
@@ -36,7 +36,7 @@ class SubscribeView(BrowserView):
         name, addr = parseaddr(s)
         return '@' in addr and '.' in addr.split('@')[-1]
 
-    def _get_storage(self):
+    def _get_storage(self):    
         site = getSite()
         annotations = IAnnotations(site)
         if SUBSCRIBERS_KEY not in annotations:
@@ -82,5 +82,6 @@ class ManageSubscribersView(SubscribeView):
         return '/@@manage-subscribers'
     
     def subscribers(self):
+        #TO DO, get this from utils
         return sorted(self._get_storage())
     
