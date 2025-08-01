@@ -16,6 +16,15 @@
     />
 
   <browser:page
+    name="subscribe"
+    for="Products.CMFPlone.interfaces.siteroot.IPloneSiteRoot"
+    class=".manage_subscribers.SubscribeView"
+    template="subscribe.pt"
+    permission="zope2.View"
+    layer="medialog.newsletter.interfaces.IMedialogNewsletterLayer"
+    />
+
+  <browser:page
     name="send-news-letter"
     for="medialog.newsletter.content.news_letter.NewsLetter"
     class=".send_news_letter_view.SendNewsLetterView"

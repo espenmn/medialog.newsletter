@@ -16,8 +16,11 @@ class IManageSubscribersView(Interface):
 
  
 
-class ManageSubscribersView(BrowserView):
-    template = ViewPageTemplateFile('manage_subscribers.pt')
+class SubscribeView(BrowserView):
+    template = ViewPageTemplateFile('subscribe.pt')
+    
+    def redirect_view(self):
+        return '/@@subscribe'
 
     def __call__(self):
         if 'form.subscribed' in self.request.form:
@@ -44,7 +47,7 @@ class ManageSubscribersView(BrowserView):
                 messages.add("Already subscribed.", type="warning")
         else:
             messages.add("Email is required.", type="error")
-        return self.request.response.redirect(self.context.absolute_url() + '/@@manage-subscribers')
+        return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
 
     def _handle_remove(self):
         email = self.request.form.get('email', '').strip().lower()
@@ -55,7 +58,16 @@ class ManageSubscribersView(BrowserView):
             messages.add("Unsubscribed successfully.", type="info")
         else:
             messages.add("Email not found or invalid.", type="warning")
-        return self.request.response.redirect(self.context.absolute_url() + '/@@manage-subscribers')
+        return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
 
+    
+    
+class ManageSubscribersView(SubscribeView):
+    template = ViewPageTemplateFile('manage_subscribers.pt') 
+    
+    def redirect_view(self):
+        return '/@@manage-subscribers'
+    
     def subscribers(self):
         return sorted(self._get_storage())
+    
