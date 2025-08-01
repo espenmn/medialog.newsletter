@@ -85,6 +85,10 @@
           <a class="button btn btn-warning" href="${context/absolute_url}/@@send-news-letter?groupmail" i18n:translate="">Send Mail to everybody</a>
         </div>
 
+        <div>
+        <a href="${view/portal_url}/@@manage-subscribers" i18n:translate="">Subscibers</a>
+        </div>
+
         <style>
       .border-0 {border: 0; padding: 2rem 0; width: 600px;  }
       .border-1 {border: 1px dotted silver; padding: 2rem; width: 600px; background: white}

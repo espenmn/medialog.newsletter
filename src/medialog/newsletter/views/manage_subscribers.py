@@ -8,6 +8,7 @@ from persistent.list import PersistentList
 from Products.statusmessages.interfaces import IStatusMessage
 from zope.component import getMultiAdapter
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from Products.CMFPlone.utils import getSite
 
 SUBSCRIBERS_KEY = 'medialog.newsletter.subscribers'
 
@@ -30,7 +31,8 @@ class SubscribeView(BrowserView):
         return self.template()  # Calls template, avoids recursion
 
     def _get_storage(self):
-        annotations = IAnnotations(self.context)
+        site = getSite()
+        annotations = IAnnotations(site)
         if SUBSCRIBERS_KEY not in annotations:
             annotations[SUBSCRIBERS_KEY] = PersistentList()
         return annotations[SUBSCRIBERS_KEY]

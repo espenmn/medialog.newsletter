@@ -17,6 +17,9 @@ from plone.registry.interfaces import IRegistry
 from zope.interface.interfaces import ComponentLookupError
 from Products.CMFCore.utils import getToolByName
 from Acquisition import aq_inner
+from Products.CMFPlone import PloneMessageFactory as _
+from zope.component import getMultiAdapter
+from Products.CMFPlone.utils import getSite
 
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -26,14 +29,12 @@ from email.utils import formataddr
 
 from Products.statusmessages.interfaces import IStatusMessage
 from Products.statusmessages.interfaces import IStatusMessage
+
 from medialog.newsletter import _
-
 from  medialog.newsletter.views.news_letter_view import NewsLetterView
-from Products.CMFPlone import PloneMessageFactory as _
+from medialog.newsletter.utils import get_subscriber_emails
 
-# from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-from zope.component import getMultiAdapter
-# from plone.app.layout.viewlets.common import ViewletBase
+
 
 
 
@@ -73,10 +74,12 @@ class SendNewsLetterView(BrowserView):
                     title="{portal_title}"
                     href="{navigation_root_url}"
                     title="{portal_title}"
+                    style="max-width: 600px;"
                 >
                     <img alt="{portal_title}"
                         title="{portal_title}"
                         src="{img_src}"
+                        style="max-width: 600px; height: auto"
                     />
                 </a>
                 <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
@@ -101,14 +104,23 @@ class SendNewsLetterView(BrowserView):
         if hasattr(context, 'group'):
             group = context.group
             usergroup = api.user.get_users(groupname=group)
-        else:
-            usergroup = api.user.get_users()
+            
+            for member in usergroup:
+                group = api.group.get_groups(user=member)
+                recipient = member.getProperty('email')
+                fullname = member.getProperty('fullname')
+                self.send_email(context, request, recipient, fullname)
 
-        for member in usergroup:
-            group = api.group.get_groups(user=member)
-            recipient = member.getProperty('email')
-            fullname = member.getProperty('fullname')
-            self.send_email(context, request, recipient, fullname)
+        else:
+            # alternatively, send to all users on site as well
+            # usergroup = api.user.get_users()
+            
+            site = getSite()
+            mail_list = get_subscriber_emails(site)
+
+            for recipient in mail_list:
+                self.send_email(context, request, recipient, recipient)
+
 
         self.request.response.redirect(self.context.absolute_url())
         
