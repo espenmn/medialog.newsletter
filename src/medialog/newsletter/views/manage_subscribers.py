@@ -9,6 +9,8 @@ from Products.statusmessages.interfaces import IStatusMessage
 from zope.component import getMultiAdapter
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFPlone.utils import getSite
+from email.utils import parseaddr
+
 
 SUBSCRIBERS_KEY = 'medialog.newsletter.subscribers'
 
@@ -29,6 +31,10 @@ class SubscribeView(BrowserView):
         elif 'form.unsubscribe' in self.request.form:
             return self._handle_remove()
         return self.template()  # Calls template, avoids recursion
+    
+    def is_probably_email(self, s):
+        name, addr = parseaddr(s)
+        return '@' in addr and '.' in addr.split('@')[-1]
 
     def _get_storage(self):
         site = getSite()
@@ -42,13 +48,12 @@ class SubscribeView(BrowserView):
         messages = IStatusMessage(self.request)
         if email:
             storage = self._get_storage()
-            import pdb; pdb.set_trace()
             for email in email.split():
-                if email not in storage:
+                if email not in storage and self.is_probably_email(email):
                     storage.append(email)
                     messages.add("Successfully subscribed.", type="info")
                 else:
-                    messages.add("Already subscribed.", type="warning")
+                    messages.add("Already subscribed or not valid.", type="warning")
         else:
             messages.add("Email is required.", type="error")
         return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
