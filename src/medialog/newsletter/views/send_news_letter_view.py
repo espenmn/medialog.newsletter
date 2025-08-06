@@ -121,7 +121,7 @@ class SendNewsLetterView(BrowserView):
                         
                 """
         message += self.more_message()
-        message += {footer_text} 
+        message += footer_text 
         message +=  f"""</div>
                 <div style="max-width: 600px; margin: 10px auto;">
                     {disclaimer_text} 
