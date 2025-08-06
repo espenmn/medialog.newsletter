@@ -20,6 +20,7 @@ from Acquisition import aq_inner
 from Products.CMFPlone import PloneMessageFactory as _
 from zope.component import getMultiAdapter
 from Products.CMFPlone.utils import getSite
+from premailer import transform
 
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -33,7 +34,7 @@ from Products.statusmessages.interfaces import IStatusMessage
 from medialog.newsletter import _
 from  medialog.newsletter.views.news_letter_view import NewsLetterView
 from medialog.newsletter.utils import get_subscriber_emails
-
+from medialog.newsletter.interfaces import IMedialogNewsletterSettings
 
 
 
@@ -56,6 +57,15 @@ class SendNewsLetterView(BrowserView):
             self.send_testmail() 
         return self.index()
     
+    @property
+    def footer_text(self):
+        return api.portal.get_registry_record('footer_text', interface=IMedialogNewsletterSettings)
+    
+    @property
+    def disclaimer_text(self):
+        return api.portal.get_registry_record('disclaimer_text', interface=IMedialogNewsletterSettings)
+    
+
     def construct_message(self):
         context = self.context
         # request = self.request
@@ -65,36 +75,59 @@ class SendNewsLetterView(BrowserView):
         portal_title = NewsLetterView.portal_title(self)
         navigation_root_url = NewsLetterView.navigation_root_url(self)
         img_src = NewsLetterView.get_logo(self)
-        message =  f"""<html>
-                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-                <div style="max-width: 600px; margin: 20px auto; 
-                background-color: #ffffff; padding: 20px; 
-                font-size: 15px; line-height: 1.6; color: #333;">                   
-                <a id="logo"
-                    title="{portal_title}"
-                    href="{navigation_root_url}"
-                    title="{portal_title}"
-                    style="max-width: 600px;"
-                >
-                    <img alt="{portal_title}"
-                        title="{portal_title}"
-                        src="{img_src}"
-                        style="max-width: 600px; height: auto"
-                    />
-                </a>
-                <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
-                <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
-                {title}</h1>
-                 <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
-                {description}
-                </div>
-                {context.text.output}
-                <div style="padding: 2rem; margin: 2rem;"><hr/></div>
+        footer_text = self.footer_text.output
+        disclaimer_text = self.disclaimer_text.output
+        
+        message =  u"""<html>
+        <style>.text-start {text-align: left}
+            .text-end {text-align: right}
+            .text-center {text-align: center}
+            .text-decoration-none {text-decoration: none}
+            .text-decoration-underline {text-decoration: underline}
+            .text-decoration-line-through {text-decoration: line-through}
+            .text-lowercase {text-transform: lowercase}
+            .text-uppercase {text-transform: uppercase}
+            .text-capitalize {text-transform: capitalize}
+            .text-wrap {white-space: normal}
+            .text-nowrap {white-space: nowrap}
+            .text-break {word-wrap: break-word;	word-break: break-word;}
+        </style>"""
+        message  += f"""<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                        <div style="max-width: 600px; margin: 20px auto; 
+                            background-color: #ffffff; padding: 20px; 
+                            font-size: 15px; line-height: 1.6; color: #333;">                   
+                            <a id="logo"
+                                title="{portal_title}"
+                                href="{navigation_root_url}"
+                                title="{portal_title}"
+                                style="max-width: 600px;"
+                            >
+                                <img alt="{portal_title}"
+                                    title="{portal_title}"
+                                    src="{img_src}"
+                                    style="max-width: 600px; height: auto"
+                                />
+                            </a>
+                            <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
+                            <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
+                                {title}
+                            </h1>
+                            <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
+                                {description}
+                            </div>
+                            {context.text.output}
+                            <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
+                            {footer_text}
+                        </div>
                 """
         message += self.more_message() 
-        message +=  u'</div><div><div><hr/></div><p style="text-align:center;"><b>Address etc here</b></p><p style="text-align:center;">Link to unsubscibe etc</p> </di></html>'
+        message +=  f"""
+                <div style="max-width: 600px; margin: 10px auto;">
+                    {disclaimer_text} 
+                </div>                
+                </html>"""
         
-        return message
+        return transform(message)
     
     def send_groupmail(self):
         context = self.context

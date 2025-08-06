@@ -5,6 +5,8 @@ from Products.Five.browser import BrowserView
 from zope.interface import Interface
 from zope.component import getMultiAdapter
 from Products.CMFPlone.utils import getSiteLogo
+from medialog.newsletter.interfaces import IMedialogNewsletterSettings
+from plone import api
 
 # from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
@@ -26,6 +28,10 @@ class NewsLetterView(BrowserView):
     
     def get_logo(self):
         return getSiteLogo()
+    
+    @property
+    def footer_text(self):
+        return api.portal.get_registry_record('footer_text', interface=IMedialogNewsletterSettings)
     
         
     # def get_logo_title(self):

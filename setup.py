@@ -54,6 +54,8 @@ setup(
         'z3c.jbot',
         'plone.api>=1.8.4',
         'plone.app.dexterity',
+        'medialog.controlpanel',
+        'premailer'
         # 'brevo_python'
     ],
     extras_require={

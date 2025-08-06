@@ -75,9 +75,10 @@
           </div>
 
 
-          <p>Address and contact information (fixed text, maybe from control pane)</p>
+          <!-- <p>Address and contact information (fixed text, maybe from control pane)</p> -->
           <!-- Unsubscribe, only in mailer ?? -->
-
+          <div tal:condition="view/footer_text|None" tal:replace="structure  view/footer_text/output|None"/>  
+   
         </div>
 
         <div class="border-0">
