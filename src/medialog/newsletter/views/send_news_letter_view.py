@@ -117,11 +117,12 @@ class SendNewsLetterView(BrowserView):
                             </div>
                             {context.text.output}
                             <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
-                            {footer_text}
-                        </div>
+                            
+                        
                 """
-        message += self.more_message() 
-        message +=  f"""
+        message += self.more_message()
+        message += {footer_text} 
+        message +=  f"""</div>
                 <div style="max-width: 600px; margin: 10px auto;">
                     {disclaimer_text} 
                 </div>                
