@@ -195,7 +195,7 @@ class SendNewsLetterView(BrowserView):
                    style="color: #fff; background-color: #0dcaf0; 
                    border: 1px solid #0dcaf0; padding: 0.375rem 0.75rem; 
                    font-size: 1rem; line-height: 1.5; 
-                   border-radius: 0.375rem">Read More …</a>
+                   border-radius: 0.375rem">Lees verder</a>
             </article>
             <div style="padding: 2rem; margin: 2rem;"><hr/></div>
             """
