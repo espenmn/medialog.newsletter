@@ -191,11 +191,11 @@ class SendNewsLetterView(BrowserView):
                 <p style="font-weight:bold; font-size: 16px">{item.Description}</p>
                 <div>{obj.text.output if obj.text else ''}</div>
                 
-                <a style="color: #fff; background-color: #0dcaf0; 
-                    border: 1px solid #0dcaf0; padding: 0.375rem 0.75rem; 
-                    font-size: 1rem; line-height: 1.5; 
-                    border-radius: 0.375rem;
-                    href="{item.getURL()}">Read More …</a>
+                <a href="{item.getURL()}"
+                   style="color: #fff; background-color: #0dcaf0; 
+                   border: 1px solid #0dcaf0; padding: 0.375rem 0.75rem; 
+                   font-size: 1rem; line-height: 1.5; 
+                   border-radius: 0.375rem">Read More …</a>
             </article>
             <div style="padding: 2rem; margin: 2rem;"><hr/></div>
             """
