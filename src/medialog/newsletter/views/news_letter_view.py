@@ -7,6 +7,7 @@ from zope.component import getMultiAdapter
 from Products.CMFPlone.utils import getSiteLogo
 from medialog.newsletter.interfaces import IMedialogNewsletterSettings
 from plone import api
+from plone.app.uuid.utils import uuidToCatalogBrain
 
 # from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
@@ -58,21 +59,43 @@ class NewsLetterView(BrowserView):
 
     
     def get_items(self):
+        context = self.context
         # TO DO, cache (?)
         # today = datetime.now()
         # could consider count from 'last month or similar'
-        count = self.context.itemcount
+        count = context.itemcount
         
-        items = self.context.portal_catalog(
+        brains = context.portal_catalog(
             portal_type=['News Item'],
             review_state=['Published', 'published'],
             sort_on='effective',
             sort_order='descending'
         )[:count]
         
+        # convert brains to objects, filter by permission
+        # Might not need this, since we only search for 'Published'
+        items = [
+            b.getObject()
+            for b in brains
+            if api.user.has_permission('View', obj=b.getObject())
+        ]
+        
+        # Resolve related items (RelationList)
+        related_items = getattr(context, "related_items", None)
+        if related_items:
+            for rel in related_items:
+                if rel.isBroken():
+                    # skip broken relations
+                    continue
+                obj = rel.to_object
+                # filter by permission
+                if api.user.has_permission('View', obj=obj):
+                    if obj not in items:
+                        items.append(obj)        
+        
         if items:
             return items
         
-        # No News Items found
+        # No Items found
         return None
         

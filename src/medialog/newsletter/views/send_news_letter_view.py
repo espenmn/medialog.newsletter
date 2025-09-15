@@ -75,8 +75,12 @@ class SendNewsLetterView(BrowserView):
         portal_title = NewsLetterView.portal_title(self)
         navigation_root_url = NewsLetterView.navigation_root_url(self)
         img_src = NewsLetterView.get_logo(self)
-        footer_text = self.footer_text.output
-        disclaimer_text = self.disclaimer_text.output
+        footer_text =  ""
+        if self.footer_text:
+            footer_text = self.footer_text.output 
+        disclaimer_text = ""
+        if self.disclaimer_text:
+            disclaimer_text = self.disclaimer_text.output
         
         message =  u"""<html>
         <style>.text-start {text-align: left}
@@ -165,8 +169,8 @@ class SendNewsLetterView(BrowserView):
             return ''
 
         html_output = ''
-        for item in items:
-            obj = item.getObject()
+        for obj in items:
+            # obj = item.getObject()
             scales = getMultiAdapter((obj, self.request), name="images")
             thumbnail = scales.scale('image', width=600)
 
@@ -185,13 +189,18 @@ class SendNewsLetterView(BrowserView):
             html_output += f"""
             <article>
                 {image_html}
-                <a href="{item.getURL()}" style="text-decoration: none">
-                    <h3 style="color: #123456">{item.Title}</h3>
+                <a href="{obj.absolute_url}" style="text-decoration: none">
+                    <h3 style="color: #123456">{obj.Title}</h3>
                 </a>
-                <p style="font-weight:bold; font-size: 16px">{item.Description}</p>
-                <div>{obj.text.output if obj.text else ''}</div>
+                <p style="font-weight:bold; font-size: 16px">{obj.Description}</p>
+                <div>{obj.text.output if obj.text else ''}</div>"""
                 
-                <a href="{item.getURL()}"
+            if obj.portal_type == 'Proloog':
+                html_output += f"""
+                    <p><b>Startdatum:</b> {obj.startdatum.strftime('%d-%m-%Y')} </p>"""
+            
+            html_output += f"""   
+                <a href="{obj.absolute_url}"
                    style="color: #fff; background-color: #0dcaf0; 
                    border: 1px solid #0dcaf0; padding: 0.375rem 0.75rem; 
                    font-size: 1rem; line-height: 1.5; 
@@ -199,11 +208,11 @@ class SendNewsLetterView(BrowserView):
             </article>
             <div style="padding: 2rem; margin: 2rem;"><hr/></div>
             """
-
+        
         return html_output
 
 
-    def send_email(self, context, request, recipient, fullname):        
+    def send_email(self, context, request, recipient, fullname):    
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
         #interpolator = IStringInterpolator(obj)
@@ -251,6 +260,10 @@ class SendNewsLetterView(BrowserView):
                                                  ),
                                                  type="info")
 
+        
+        # except ConnectionRefusedError: 
+        #     messages.add("Please check Email setup", type="error")        
+        
         except:
             messages.add(_("cant_send_mail_message",
                                                  default=u"Could not send to $email",

@@ -48,8 +48,8 @@
 
           <hr/>
 
-          <div tal:repeat="item view/items|None">
-            <article tal:define="obj item/getObject">
+          <div tal:repeat="obj view/items|None">
+            <article>
 
 
               <div class="newsletter_imagediv" tal:define="scales obj/@@images; 
@@ -61,14 +61,21 @@
                   <figcaption style="color: #777;" tal:content="obj/image_caption" />
                 </figure>
               </div>
-              <a href="${item/getURL}" style="text-decoration: none">
-                <h3>${item/Title}</h3>
+              <a href="${obj/absolute_url}" style="text-decoration: none">
+                <h3>${obj/Title}</h3>
               </a>
-              <p class="lead documentDescription">${item/Description}</p>
+              <p class="lead documentDescription">${obj/Description}</p>
 
               <div tal:content="structure obj/text/output|None"></div>
+              
+              <!-- Only for Proloog, show these fields -->
+              <tal:condition tal:condition="python: obj.portal_type == 'Proloog'">
+                <p tal:condition="obj/startdatum|None">
+                  <b i18n:translate="">Startdatum:</b> ${python:obj.startdatum.strftime('%d-%m-%Y')}
+                </p>
+              </tal:condition>
 
-              <a class="button btn btn-standalone btn-info" href="${item/getURL}" i18n:translate="">Read More …</a>
+              <a class="button btn btn-standalone btn-info" href="${obj/absolute_url}" i18n:translate="">Read More …</a>
 
             </article>
             <hr/>

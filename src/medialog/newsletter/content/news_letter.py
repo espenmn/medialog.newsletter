@@ -2,13 +2,15 @@
 from plone.app.textfield import RichText
 from plone.autoform import directives
 from plone.dexterity.content import Item
-# from plone.namedfile import field as namedfile
 from plone.supermodel import model
-# from plone.supermodel.directives import fieldset
-# from z3c.form.browser.radio import RadioFieldWidget
 from zope import schema
 from zope.interface import implementer
-
+from plone.app.z3cform.widget import RelatedItemsFieldWidget
+from plone.app.vocabularies.catalog import CatalogSource
+from z3c.relationfield.schema import RelationList, RelationChoice
+# from plone.namedfile import field as namedfile
+# from plone.supermodel.directives import fieldset
+# from z3c.form.browser.radio import RadioFieldWidget
 
 from medialog.newsletter import _
 
@@ -16,26 +18,29 @@ from medialog.newsletter import _
 class INewsLetter(model.Schema):
     """ Marker interface and Dexterity Python Schema for NewsLetter
     """
-    # If you want, you can load a xml model created TTW here
-    # and customize it in Python:
-
+   
     # model.load('news_letter.xml')
-
-    # directives.widget(level=RadioFieldWidget)
-    # level = schema.Choice(
-    #     title=_(u'Sponsoring Level'),
-    #     vocabulary=LevelVocabulary,
-    #     required=True
-    # )
-
+ 
     text = RichText(
         title=_(u'Text'),
         required=False
     )
     
     itemcount = schema.Int(
-        title=_(u'Items to send'),
+        title=_(u'Number of News Items to send'),
         required=False
+    )
+    
+    directives.widget(related_items=RelatedItemsFieldWidget)
+    related_items = RelationList(
+        title=_(u"Items to includ items"),
+        default=[],
+        required=False,
+        value_type=RelationChoice(
+            title=_(u"Content to include"),
+            # source=CatalogSource(),  # optional filter here
+            source=CatalogSource(portal_type=("News Item", "Document", "Proloog"))
+        )
     )
 
     # url = schema.URI(
