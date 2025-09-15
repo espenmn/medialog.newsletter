@@ -27,7 +27,7 @@ class INewsLetter(model.Schema):
     )
     
     itemcount = schema.Int(
-        title=_(u'Number of News Items to send'),
+        title=_(u'Number of News Items to include'),
         required=False
     )
     
