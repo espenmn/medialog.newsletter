@@ -186,7 +186,6 @@ class SendNewsLetterView(BrowserView):
                 </div>
                 """
 
-            import pdb; pdb.set_trace()
             html_output += f"""
             <article>
                 {image_html}
