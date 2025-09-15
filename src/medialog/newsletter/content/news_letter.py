@@ -33,7 +33,7 @@ class INewsLetter(model.Schema):
     
     directives.widget(related_items=RelatedItemsFieldWidget)
     related_items = RelationList(
-        title=_(u"Items to includ items"),
+        title=_(u"Items to include"),
         default=[],
         required=False,
         value_type=RelationChoice(
