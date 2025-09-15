@@ -186,18 +186,19 @@ class SendNewsLetterView(BrowserView):
                 </div>
                 """
 
+            import pdb; pdb.set_trace()
             html_output += f"""
             <article>
                 {image_html}
                 <a href="{obj.absolute_url}" style="text-decoration: none">
-                    <h3 style="color: #123456">{obj.Title}</h3>
+                    <h3 style="color: #123456">{obj.Title()}</h3>
                 </a>
-                <p style="font-weight:bold; font-size: 16px">{obj.Description}</p>
+                <p style="font-weight:bold; font-size: 16px">{obj.Description()}</p>
                 <div>{obj.text.output if obj.text else ''}</div>"""
                 
             if obj.portal_type == 'Proloog':
                 html_output += f"""
-                    <p><b>Startdatum:</b> {obj.startdatum.strftime('%d-%m-%Y')} </p>"""
+                    <p><b>Startdatum:</b> {obj.startdatum.strftime('%d-%m-%Y')}</p>"""
             
             html_output += f"""   
                 <a href="{obj.absolute_url}"
@@ -244,8 +245,7 @@ class SendNewsLetterView(BrowserView):
             html_part.attach(html_text)
             outer.attach(html_part)
             # # Finally send mail.
-            mailhost.send(outer.as_string())  
-            
+            mailhost.send(outer.as_string())              
             
             # if we want 'not html we can use api portal
             # api.portal.send_email(
