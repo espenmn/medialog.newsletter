@@ -189,7 +189,7 @@ class SendNewsLetterView(BrowserView):
             html_output += f"""
             <article>
                 {image_html}
-                <a href="{obj.absolute_url}" style="text-decoration: none">
+                <a href="{obj.absolute_url()}" style="text-decoration: none">
                     <h3 style="color: #123456">{obj.Title()}</h3>
                 </a>
                 <p style="font-weight:bold; font-size: 16px">{obj.Description()}</p>
@@ -200,7 +200,7 @@ class SendNewsLetterView(BrowserView):
                     <p><b>Startdatum:</b> {obj.startdatum.strftime('%d-%m-%Y')}</p>"""
             
             html_output += f"""   
-                <a href="{obj.absolute_url}"
+                <a href="{obj.absolute_url()}"
                    style="color: #fff; background-color: #0dcaf0; 
                    border: 1px solid #0dcaf0; padding: 0.375rem 0.75rem; 
                    font-size: 1rem; line-height: 1.5; 
