@@ -96,7 +96,7 @@ class SendNewsLetterView(BrowserView):
             .text-nowrap {white-space: nowrap}
             .text-break {word-wrap: break-word;	word-break: break-word;}
         </style>"""
-        message  += f"""<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+        message  += f"""<body style="margin: 0; padding: 0; font-family: Roboto, Arial, sans-serif; background-color: #f4f4f4;">
                         <div style="max-width: 600px; margin: 20px auto; 
                             background-color: #ffffff; padding: 20px; 
                             font-size: 15px; line-height: 1.6; color: #333;">                   
@@ -113,7 +113,8 @@ class SendNewsLetterView(BrowserView):
                                 />
                             </a>
                             <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
-                            <h1 style="color: #123456; font-size: 24px; margin-top: 0;">
+                            <h1 style="color: #D62265; 
+                                font-size: 33px; margin-top: 0;">
                                 {title}
                             </h1>
                             <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
@@ -190,9 +191,13 @@ class SendNewsLetterView(BrowserView):
             <article>
                 {image_html}
                 <a href="{obj.absolute_url()}" style="text-decoration: none">
-                    <h3 style="color: #123456">{obj.Title()}</h3>
+                    <h3 style="color: #375d9a; font-size: 1.75rem; font-weight: 300;">{obj.Title()}</h3>
                 </a>
-                <p style="font-weight:bold; font-size: 16px">{obj.Description()}</p>
+                <p style="font-weight:bold; font-size: 16px; border-bottom: 1px solid #0095CA !important;
+                color: #D62265 !important;
+                padding-bottom: 0.5em;
+                margin-bottom: 1em;
+                font-weight: 200 !important;">{obj.Description()}</p>
                 <div>{obj.text.output if obj.text else ''}</div>"""
                 
             if obj.portal_type == 'Proloog':
