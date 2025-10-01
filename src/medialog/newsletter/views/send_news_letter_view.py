@@ -112,17 +112,17 @@ class SendNewsLetterView(BrowserView):
                                     style="max-width: 600px; height: auto"
                                 />
                             </a>
-                            <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
+                            <div style="color: #555; padding: 2rem 0; margin: 2rem 0;"><hr/></div>
                             <h1 style="color: #D62265; 
                                 font-weight: 400 !important;
-                                font-size: 33px; margin-top: 0;">
+                                font-size: 34px; margin-top: 0;">
                                 {title}
                             </h1>
                             <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
                                 {description}
                             </div>
                             {context.text.output}
-                            <div style="padding: 2rem 0; margin: 2rem 0;"><hr/></div>
+                            <div style="color: #555; padding: 2rem 0; margin: 2rem 0;"><hr/></div>
                             
                         
                 """
@@ -192,9 +192,9 @@ class SendNewsLetterView(BrowserView):
             <article>
                 {image_html}
                 <a href="{obj.absolute_url()}" style="text-decoration: none">
-                    <h3 style="color: #375d9a; font-size: 29px; font-weight: 300;">{obj.Title()}</h3>
+                    <h3 style="color: #375d9a; line-height; margin-top: 0; margin-bottom: .5rem; line-height: 1.2;font-size: 30px; font-weight: 300;">{obj.Title()}</h3>
                 </a>
-                <p style="font-weight:bold; font-size: 18px; border-bottom: 1px solid #0095CA !important;
+                <p class="lead documentDescription" style="font-size: 18px; border-bottom: 1px solid #0095CA !important;
                 color: #D62265 !important;
                 padding-bottom: 0.5em;
                 margin-bottom: 1em;
