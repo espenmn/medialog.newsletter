@@ -279,6 +279,7 @@ class SendNewsLetterView(BrowserView):
                                                  mapping={'email': recipient },
                                                  ),
                                                  type="warning")
+         
 
 
 
@@ -346,8 +347,7 @@ class SendNewsLetterView(BrowserView):
                             ),
                             type="info"
                         ) 
-             
-            print("done sending")
+ 
         
         # except ConnectionRefusedError: 
         #     messages.add("Please check Email setup", type="error")        
