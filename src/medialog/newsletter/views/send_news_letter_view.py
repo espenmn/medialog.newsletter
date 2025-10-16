@@ -21,6 +21,7 @@ from Products.CMFPlone import PloneMessageFactory as _
 from zope.component import getMultiAdapter
 from Products.CMFPlone.utils import getSite
 from premailer import transform
+import smtplib
 
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -32,11 +33,11 @@ from Products.statusmessages.interfaces import IStatusMessage
 from Products.statusmessages.interfaces import IStatusMessage
 
 from medialog.newsletter import _
-from  medialog.newsletter.views.news_letter_view import NewsLetterView
+from medialog.newsletter.views.news_letter_view import NewsLetterView
 from medialog.newsletter.utils import get_subscriber_emails
 from medialog.newsletter.interfaces import IMedialogNewsletterSettings
 
-
+from email.message import EmailMessage
 
 
 class ISendNewsLetterView(Interface):
@@ -145,11 +146,14 @@ class SendNewsLetterView(BrowserView):
             group = context.group
             usergroup = api.user.get_users(groupname=group)
             
+            mail_list = []
             for member in usergroup:
                 group = api.group.get_groups(user=member)
                 recipient = member.getProperty('email')
-                fullname = member.getProperty('fullname')
-                self.send_email(context, request, recipient, fullname)
+                # fullname = member.getProperty('fullname')
+                mail_list.append(recipient) 
+                # self.send_emails(context, request, recipient, fullname)
+            self.send_emails(context, request, mail_list)
 
         else:
             # alternatively, send to all users on site as well
@@ -158,8 +162,7 @@ class SendNewsLetterView(BrowserView):
             site = getSite()
             mail_list = get_subscriber_emails(site)
 
-            for recipient in mail_list:
-                self.send_email(context, request, recipient, recipient)
+            self.send_emails(context, request, mail_list)
 
 
         self.request.response.redirect(self.context.absolute_url())
@@ -274,6 +277,85 @@ class SendNewsLetterView(BrowserView):
             messages.add(_("cant_send_mail_message",
                                                  default=u"Could not send to $email",
                                                  mapping={'email': recipient },
+                                                 ),
+                                                 type="warning")
+
+
+
+
+    def send_emails(self, context, request, recipients):    
+        registry = getUtility(IRegistry)
+        self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
+        #interpolator = IStringInterpolator(obj)
+
+        mailhost = getToolByName(aq_inner(self.context), "MailHost")
+        if not mailhost:
+                abc = 1
+                raise ComponentLookupError(
+                    "You must have a Mailhost utility to \
+                execute this action"
+                )
+
+        # ready to create multipart mail 
+        try:      
+            self.email_charset = self.mail_settings.email_charset  
+            title = context.Title()
+            # description = context.Description()
+            messages = IStatusMessage(self.request)
+            message = self.construct_message()
+            msg = EmailMessage()
+            # outer = MIMEMultipart('alternative')
+            msg['Subject'] =  title                    
+            msg['From'] =  formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
+            # msg.epilogue = ''
+
+            # Attach text part
+            # html_part = MIMEMultipart('related')
+            # html_text = MIMEText(message, 'html', _charset='UTF-8')
+            # html_part.attach(html_text)
+            msg.add_alternative(message, subtype='html')
+            # outer.attach(html_part)
+            # # Finally send mail.
+            
+            smtp_host = self.mail_settings.smtp_host
+            smtp_port = self.mail_settings.smtp_port
+            
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                for recipient in recipients:
+                    
+                    msg = EmailMessage()
+                    msg['Subject'] = title
+                    msg['From'] = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
+                    msg['To'] = formataddr((recipient, recipient))
+                    
+                    # Attach HTML content
+                    msg.add_alternative(message, subtype='html')
+
+                    # Send the email
+                    with smtplib.SMTP(smtp_host, smtp_port) as server:
+                        server.sendmail(
+                            from_addr=self.mail_settings.email_from_address,
+                            to_addrs=[recipient],
+                            msg=msg.as_string()
+                        )
+
+                        messages.add(
+                            _("sent_mail_message",
+                            default=u"Sent to $email",
+                            mapping={'email': recipient}
+                            ),
+                            type="info"
+                        ) 
+             
+            print("done sending")
+        
+        # except ConnectionRefusedError: 
+        #     messages.add("Please check Email setup", type="error")        
+        
+        except:
+            messages.add(_("cant_send_mail_message",
+                                                 default=u"Could not send to all",
+                                                 mapping={'email': 'emails' },
                                                  ),
                                                  type="warning")
 
