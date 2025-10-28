@@ -29,7 +29,7 @@
     for="medialog.newsletter.content.news_letter.NewsLetter"
     class=".send_news_letter_view.SendNewsLetterView"
     template="send_news_letter_view.pt"
-    permission="zope2.View"
+    permission="cmf.ManagePortal"
     layer="medialog.newsletter.interfaces.IMedialogNewsletterLayer"
     />
 
