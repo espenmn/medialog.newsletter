@@ -90,7 +90,13 @@
 
         <div class="border-0">
           <a class="button btn btn-secondary" href="${context/absolute_url}/@@send-news-letter" i18n:translate="">Verstuur test e-mail</a>
-          <a class="button btn btn-warning" href="${context/absolute_url}/@@send-news-letter?groupmail" i18n:translate="">Verstuur e-mail naar iedereen</a>
+          <!-- <a class="button btn btn-warning" href="${context/absolute_url}/@@send-news-letter?groupmail" i18n:translate="">Verstuur e-mail naar iedereen</a> -->
+          <a class="button btn btn-warning"
+            href="${context/absolute_url}/@@send-news-letter?groupmail"
+            i18n:translate=""
+            onclick="return confirm('Weet u zeker dat u e-mail naar iedereen wilt sturen?');">
+            Verstuur e-mail naar iedereen
+          </a>
         </div>
 
         <div>

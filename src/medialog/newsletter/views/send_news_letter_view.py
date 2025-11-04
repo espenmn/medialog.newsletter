@@ -283,12 +283,12 @@ class SendNewsLetterView(BrowserView):
 
 
 
-
+    # Send groupmail
     def send_emails(self, context, request, recipients):    
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
         #interpolator = IStringInterpolator(obj)
-
+        
         mailhost = getToolByName(aq_inner(self.context), "MailHost")
         if not mailhost:
                 abc = 1
