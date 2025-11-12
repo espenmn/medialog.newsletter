@@ -8,37 +8,37 @@
 # from pprint import pprint
 
 # from medialog.newsletter import _
-from Products.Five.browser import BrowserView
-from zope.interface import Interface
-from plone import api
-from Products.CMFPlone.interfaces import IMailSchema
-from zope.component import adapter, getUtility
-from plone.registry.interfaces import IRegistry
-from zope.interface.interfaces import ComponentLookupError
-from Products.CMFCore.utils import getToolByName
 from Acquisition import aq_inner
-from Products.CMFPlone import PloneMessageFactory as _
-from zope.component import getMultiAdapter
-from Products.CMFPlone.utils import getSite
-from premailer import transform
-import smtplib
-
-from email.mime.text import MIMEText
+from datetime import date
+from email import encoders
+from email.message import EmailMessage
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-from email import encoders
+from email.mime.text import MIMEText
 from email.utils import formataddr
-
+from plone import api
+from plone.registry.interfaces import IRegistry
+from premailer import transform
+from Products.CMFCore.utils import getToolByName
+from Products.CMFPlone import PloneMessageFactory as _
+from Products.CMFPlone.interfaces import IMailSchema
+from Products.CMFPlone.utils import getSite
+from Products.Five.browser import BrowserView
 from Products.statusmessages.interfaces import IStatusMessage
-from Products.statusmessages.interfaces import IStatusMessage
-
+from zope.annotation.interfaces import IAnnotations
+from zope.component import adapter, getUtility
+from zope.component import getMultiAdapter
+from zope.component import getUtility
+from zope.i18nmessageid import MessageFactory
+from zope.interface import Interface
+from zope.interface.interfaces import ComponentLookupError
+import smtplib
 from medialog.newsletter import _
-from medialog.newsletter.views.news_letter_view import NewsLetterView
-from medialog.newsletter.utils import get_subscriber_emails
 from medialog.newsletter.interfaces import IMedialogNewsletterSettings
+from medialog.newsletter.utils import get_subscriber_emails
+from medialog.newsletter.views.news_letter_view import NewsLetterView
 
-from email.message import EmailMessage
-
+_ = MessageFactory("plone")
 
 class ISendNewsLetterView(Interface):
     """ Marker Interface for ISendNewsLetterView"""
@@ -122,7 +122,7 @@ class SendNewsLetterView(BrowserView):
                             <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
                                 {description}
                             </div>
-                            {context.text.output}
+                            {context.text.output if context.text else ''}
                             <div style="color: #555; padding: 2rem 0; margin: 2rem 0;"><hr/></div>
                             
                         
@@ -283,81 +283,72 @@ class SendNewsLetterView(BrowserView):
 
 
 
-    # Send groupmail
-    def send_emails(self, context, request, recipients):    
+    # Send group mail
+    def send_emails(self, context, request, recipients):
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
-        #interpolator = IStringInterpolator(obj)
-        
-        mailhost = getToolByName(aq_inner(self.context), "MailHost")
-        if not mailhost:
-                abc = 1
-                raise ComponentLookupError(
-                    "You must have a Mailhost utility to \
-                execute this action"
+        #  mailhost = getToolByName(aq_inner(self.context), "MailHost")
+        mailhost = getToolByName(context, "MailHost")
+        messages = IStatusMessage(request)
+
+        annotations = IAnnotations(context)
+        SENT_KEY = "groupmail.sent_data"
+
+        # Load sent data
+        sent_data = annotations.get(SENT_KEY, {})
+        today_str = date.today().isoformat()
+
+        # Get already sent list for today
+        already_sent = sent_data.get(today_str, [])
+
+        # Filter recipients
+        recipients_to_send = [r for r in recipients if r not in already_sent]
+        if not recipients_to_send:
+            messages.add(_("All recipients have already received the mail today."), type="info")
+            return
+
+        title = context.Title()
+        message = self.construct_message()
+        smtp_host = self.mail_settings.smtp_host
+        smtp_port = self.mail_settings.smtp_port
+
+        try:
+            for recipient in recipients_to_send:
+                msg = EmailMessage()
+                msg['Subject'] = title
+                msg['From'] = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
+                msg['To'] = formataddr((recipient, recipient))
+                msg.add_alternative(message, subtype='html')
+
+                with smtplib.SMTP(smtp_host, smtp_port) as server:
+                    server.sendmail(
+                        from_addr=self.mail_settings.email_from_address,
+                        to_addrs=[recipient],
+                        msg=msg.as_string()
+                    )
+
+                messages.add(
+                    _("sent_mail_message",
+                    default=u"Sent to $email",
+                    mapping={'email': recipient}),
+                    type="info"
                 )
 
-        # ready to create multipart mail 
-        try:      
-            self.email_charset = self.mail_settings.email_charset  
-            title = context.Title()
-            # description = context.Description()
-            messages = IStatusMessage(self.request)
-            message = self.construct_message()
-            msg = EmailMessage()
-            # outer = MIMEMultipart('alternative')
-            msg['Subject'] =  title                    
-            msg['From'] =  formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
-            # msg.epilogue = ''
+                # Update sent record
+                already_sent.append(recipient)
+                # Save sent data back to annotations
+                sent_data[today_str] = already_sent
+                annotations[SENT_KEY] = sent_data
+                context._p_changed = True  # mark as modified for persistence
 
-            # Attach text part
-            # html_part = MIMEMultipart('related')
-            # html_text = MIMEText(message, 'html', _charset='UTF-8')
-            # html_part.attach(html_text)
-            msg.add_alternative(message, subtype='html')
-            # outer.attach(html_part)
-            # # Finally send mail.
-            
-            smtp_host = self.mail_settings.smtp_host
-            smtp_port = self.mail_settings.smtp_port
-            
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                for recipient in recipients:
-                    
-                    msg = EmailMessage()
-                    msg['Subject'] = title
-                    msg['From'] = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
-                    msg['To'] = formataddr((recipient, recipient))
-                    
-                    # Attach HTML content
-                    msg.add_alternative(message, subtype='html')
 
-                    # Send the email
-                    with smtplib.SMTP(smtp_host, smtp_port) as server:
-                        server.sendmail(
-                            from_addr=self.mail_settings.email_from_address,
-                            to_addrs=[recipient],
-                            msg=msg.as_string()
-                        )
-
-                        messages.add(
-                            _("sent_mail_message",
-                            default=u"Sent to $email",
-                            mapping={'email': recipient}
-                            ),
-                            type="info"
-                        ) 
- 
-        
-        # except ConnectionRefusedError: 
-        #     messages.add("Please check Email setup", type="error")        
-        
-        except:
-            messages.add(_("cant_send_mail_message",
-                                                 default=u"Could not send to all",
-                                                 mapping={'email': 'emails' },
-                                                 ),
-                                                 type="warning")
+        except Exception as e:
+            messages.add(
+                _("cant_send_mail_message",
+                default=u"Could not send to all: ${error}",
+                mapping={'error': str(e)}),
+                type="warning"
+            )
 
 
     def send_testmail(self):
