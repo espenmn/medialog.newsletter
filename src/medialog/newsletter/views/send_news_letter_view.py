@@ -32,6 +32,7 @@ from zope.component import getUtility
 from zope.i18nmessageid import MessageFactory
 from zope.interface import Interface
 from zope.interface.interfaces import ComponentLookupError
+import transaction
 import smtplib
 from medialog.newsletter import _
 from medialog.newsletter.interfaces import IMedialogNewsletterSettings
@@ -57,7 +58,7 @@ class SendNewsLetterView(BrowserView):
         else:
             self.send_testmail() 
         # return self.index()
-        return self.request.response.redirect(self.context.absolute_url())
+        # return self.request.response.redirect(self.context.absolute_url())
     
     @property
     def footer_text(self):
@@ -321,7 +322,6 @@ class SendNewsLetterView(BrowserView):
                 msg['To'] = formataddr((recipient, recipient))
                 msg.add_alternative(message, subtype='html')                
                 
-                # import pdb; pdb.set_trace()
                 if not recipient in already_sent:
                     with smtplib.SMTP(smtp_host, smtp_port) as server:
                         server.sendmail(
@@ -336,6 +336,7 @@ class SendNewsLetterView(BrowserView):
                     sent_data[today_str] = already_sent
                     annotations[SENT_KEY] = sent_data
                     context._p_changed = True  # mark as modified for persistence
+                    transaction.commit()
                 
                     # Add message to user UI
                     messages.add(
