@@ -56,7 +56,8 @@ class SendNewsLetterView(BrowserView):
             self.send_groupmail()
         else:
             self.send_testmail() 
-        return self.index()
+        # return self.index()
+        return self.request.response.redirect(self.context.absolute_url())
     
     @property
     def footer_text(self):
@@ -292,7 +293,7 @@ class SendNewsLetterView(BrowserView):
         messages = IStatusMessage(request)
 
         annotations = IAnnotations(context)
-        SENT_KEY = "groupmail.sent_data"
+        SENT_KEY = "sent_data"
 
         # Load sent data
         sent_data = annotations.get(SENT_KEY, {})
@@ -318,28 +319,35 @@ class SendNewsLetterView(BrowserView):
                 msg['Subject'] = title
                 msg['From'] = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
                 msg['To'] = formataddr((recipient, recipient))
-                msg.add_alternative(message, subtype='html')
+                msg.add_alternative(message, subtype='html')                
+                
+                # import pdb; pdb.set_trace()
+                if not recipient in already_sent:
+                    with smtplib.SMTP(smtp_host, smtp_port) as server:
+                        server.sendmail(
+                            from_addr=self.mail_settings.email_from_address,
+                            to_addrs=[recipient],
+                            msg=msg.as_string()
+                        )
 
-                with smtplib.SMTP(smtp_host, smtp_port) as server:
-                    server.sendmail(
-                        from_addr=self.mail_settings.email_from_address,
-                        to_addrs=[recipient],
-                        msg=msg.as_string()
+                    # Update sent record
+                    already_sent.append(recipient)
+                    # Save sent data back to annotations
+                    sent_data[today_str] = already_sent
+                    annotations[SENT_KEY] = sent_data
+                    context._p_changed = True  # mark as modified for persistence
+                
+                    # Add message to user UI
+                    messages.add(
+                        _("sent_mail_message",
+                        default=u"Sent to $email",
+                        mapping={'email': recipient}),
+                        type="info"
                     )
-
-                messages.add(
-                    _("sent_mail_message",
-                    default=u"Sent to $email",
-                    mapping={'email': recipient}),
-                    type="info"
-                )
-
-                # Update sent record
-                already_sent.append(recipient)
-                # Save sent data back to annotations
-                sent_data[today_str] = already_sent
-                annotations[SENT_KEY] = sent_data
-                context._p_changed = True  # mark as modified for persistence
+                
+                # sent_data[today_str] = already_sent
+                # annotations[SENT_KEY] = sent_data
+                # context._p_changed = True  # mark as modified for persistence
 
 
         except Exception as e:
