@@ -50,7 +50,8 @@ class IMedialogNewsletterSettings(model.Schema):
         label=_(u'Newsletter'),
         fields=[
             'footer_text',
-            'disclaimer_text'
+            'disclaimer_text',
+            'newsletter_from'
             ],
         )
     
