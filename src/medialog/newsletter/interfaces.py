@@ -66,6 +66,11 @@ class IMedialogNewsletterSettings(model.Schema):
         required=False,
     )
     
+    newsletter_from = schema.TextLine(
+        title="Newsletter email from address",
+        required=True,
+    )
+    
     
     
 

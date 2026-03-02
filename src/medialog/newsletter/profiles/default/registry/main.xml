@@ -1,15 +1,19 @@
 <?xml version="1.0"?>
 <registry xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.newsletter">
 
-  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.footer_text" 
-    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="footer_text">
- 
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.footer_text" interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="footer_text">
+
   </record>
 
-  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.disclaimer_text" 
-    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="disclaimer_text">
- 
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.disclaimer_text" interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="disclaimer_text">
+
   </record>
+
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.newsletter_from" interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="newsletter_from">
+  </record>
+
+
+
 
 </registry>
 

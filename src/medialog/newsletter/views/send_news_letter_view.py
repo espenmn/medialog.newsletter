@@ -247,7 +247,9 @@ class SendNewsLetterView(BrowserView):
             outer = MIMEMultipart('alternative')
             outer['Subject'] =  title                    
             outer['To'] = formataddr((fullname, recipient))
-            outer['From'] =  formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
+            newsletterfrom =  api.portal.get_registry_record('newsletter_from', interface=IMedialogNewsletterSettings)
+            outer['From'] =  formataddr((self.mail_settings.email_from_name, newsletterfrom))            
+            
             outer.epilogue = ''
 
             # Attach text part
@@ -313,19 +315,20 @@ class SendNewsLetterView(BrowserView):
         message = self.construct_message()
         smtp_host = self.mail_settings.smtp_host
         smtp_port = self.mail_settings.smtp_port
+        newsletterfrom =  api.portal.get_registry_record('newsletter_from', interface=IMedialogNewsletterSettings)
 
         try:
             for recipient in recipients_to_send:
                 msg = EmailMessage()
                 msg['Subject'] = title
-                msg['From'] = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address))
+                msg['From'] = formataddr((self.mail_settings.email_from_name,  newsletterfrom))
                 msg['To'] = formataddr((recipient, recipient))
                 msg.add_alternative(message, subtype='html')                
                 
                 if not recipient in already_sent:
                     with smtplib.SMTP(smtp_host, smtp_port) as server:
                         server.sendmail(
-                            from_addr=self.mail_settings.email_from_address,
+                            from_addr= newsletterfrom,
                             to_addrs=[recipient],
                             msg=msg.as_string()
                         )
