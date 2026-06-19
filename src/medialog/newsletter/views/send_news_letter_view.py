@@ -112,7 +112,7 @@ class SendNewsLetterView(BrowserView):
                 border="0"
                 style="background-color:#ffffff; border-collapse: collapse; margin: 20px auto; max-width:640px;"
             >
-                <tr style="background-color:#ffffff; padding: 0">
+                <tr style="background-color:#ffffff">
                     <td style="padding: 20px; text-align: center">
                         <a
                             id="logo"
@@ -129,14 +129,14 @@ class SendNewsLetterView(BrowserView):
                     </td>
                 </tr>
 
-                <tr style="background-color:#ffffff"; padding: 0">
+                <tr style="background-color:#ffffff">
                     <td style="padding:0 20px; text-align:center">
                         <hr style="border:0; border-top:1px dotted #c0c0c0;">
                     </td>
                 </tr>
 
-                <tr  style="padding: 0">
-                    <td style="text-align:left; padding:0 20px;">
+                <tr>
+                    <td style="text-align:left; padding:20px;">
                         <h1 style="
                             color:#D62265;
                             font-weight:400 !important;
