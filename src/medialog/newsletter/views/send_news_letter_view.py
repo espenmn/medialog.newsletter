@@ -71,22 +71,23 @@ class SendNewsLetterView(BrowserView):
 
     def construct_message(self):
         context = self.context
-        # request = self.request
-        # self.email_charset = self.mail_settings.email_charset        
         title = context.Title()
         description = context.Description()
         portal_title = NewsLetterView.portal_title(self)
         navigation_root_url = NewsLetterView.navigation_root_url(self)
         img_src = NewsLetterView.get_logo(self)
-        footer_text =  ""
+
+        footer_text = ""
         if self.footer_text:
-            footer_text = self.footer_text.output 
+            footer_text = self.footer_text.output
+
         disclaimer_text = ""
         if self.disclaimer_text:
             disclaimer_text = self.disclaimer_text.output
-        
-        message =  u"""<html>
-        <style>.text-start {text-align: left}
+
+        message = u"""<html>
+        <style>
+            .text-start {text-align: left}
             .text-end {text-align: right}
             .text-center {text-align: center}
             .text-decoration-none {text-decoration: none}
@@ -97,47 +98,95 @@ class SendNewsLetterView(BrowserView):
             .text-capitalize {text-transform: capitalize}
             .text-wrap {white-space: normal}
             .text-nowrap {white-space: nowrap}
-            .text-break {word-wrap: break-word;	word-break: break-word;}
-        </style>"""
-        message  += f"""<body style="margin: 0; padding: 0; font-family: Roboto, Arial, sans-serif; background-color: #f4f4f4;">
-                        <div style="max-width: 600px; margin: 20px auto; 
-                            background-color: #ffffff; padding: 20px; 
-                            font-size: 15px; line-height: 1.6; color: #333;">                   
-                            <a id="logo"
+            .text-break {word-wrap: break-word; word-break: break-word;}
+        </style>
+        """
+
+        message += f"""
+        <body style="margin: 0; padding: 20px; font-family: Roboto, Arial, sans-serif; background-color: #f4f4f4;">
+            <table
+                role="presentation"
+                width="640"
+                cellpadding="20"
+                cellspacing="0"
+                border="0"
+                style="background-color:#ffffff; border-collapse: collapse; margin: 20px auto; max-width:640px;"
+            >
+                <tr style="background-color:#ffffff">
+                    <td style="padding: 20px; text-align: center">
+                        <a
+                            id="logo"
+                            href="{navigation_root_url}"
+                            title="{portal_title}"
+                        >
+                            <img
+                                alt="{portal_title}"
                                 title="{portal_title}"
-                                href="{navigation_root_url}"
-                                title="{portal_title}"
-                                style="max-width: 600px;"
-                            >
-                                <img alt="{portal_title}"
-                                    title="{portal_title}"
-                                    src="{img_src}"
-                                    style="max-width: 600px; height: auto"
-                                />
-                            </a>
-                            <div style="color: #555; padding: 2rem 0; margin: 2rem 0;"><hr/></div>
-                            <h1 style="color: #D62265; 
-                                font-weight: 400 !important;
-                                font-size: 34px; margin-top: 0;">
-                                {title}
-                            </h1>
-                            <div style="font-style: italic; color: #555; margin-bottom: 20px; font-size: 20px">
-                                {description}
-                            </div>
-                            {context.text.output if context.text else ''}
-                            <div style="color: #555; padding: 2rem 0; margin: 2rem 0;"><hr/></div>
-                            
-                        
-                """
+                                src="{img_src}"
+                                style="max-width: 600px; height:auto; border:0; display:block; margin:auto;"
+                            />
+                        </a>
+                    </td>
+                </tr>
+
+                <tr style="background-color:#ffffff">
+                    <td style="padding:0 20px; text-align:center">
+                        <hr style="border:0; border-top:1px dotted #c0c0c0;">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="text-align:left; padding:20px;">
+                        <h1 style="
+                            color:#D62265;
+                            font-weight:400 !important;
+                            font-size:34px;
+                            margin-top:0;
+                            line-height:1.2;
+                        ">
+                            {title}
+                        </h1>
+
+                        <div style="
+                            font-style:italic;
+                            color:#555;
+                            margin-bottom:20px;
+                            font-size:20px;
+                        ">
+                            {description}
+                        </div>
+
+                        {context.text.output if context.text else ''}
+
+                        <div style="padding:1rem 0; margin:1rem 0;">
+                            <hr style="border:0; border-top:1px dotted #c0c0c0;">
+                        </div>
+                    </td>
+                </tr>
+        """
+
         message += self.more_message()
-        message += footer_text 
-        message +=  f"""</div>
-                <div style="max-width: 600px; margin: 10px auto;">
-                    {disclaimer_text} 
-                </div>                
-                </html>"""
-        
+
+        message += f"""
+                <tr>
+                    <td style="padding:0 20px;">
+                        {footer_text}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:0 20px;">
+                        {disclaimer_text}
+                    </td>
+                </tr>
+
+            </table>
+        </body>
+        </html>
+        """
+
         return transform(message)
+
     
     def send_groupmail(self):
         context = self.context
@@ -172,56 +221,110 @@ class SendNewsLetterView(BrowserView):
 
     def more_message(self):
         items = NewsLetterView.get_items(self)
+
         if not items:
             return ''
 
         html_output = ''
+
         for obj in items:
-            # obj = item.getObject()
             scales = getMultiAdapter((obj, self.request), name="images")
             thumbnail = scales.scale('image', width=600)
 
             image_html = ''
+
             if thumbnail:
                 image_html = f"""
-                <div style="padding: 0; margin: 0.5rem 0">
-                    <figure style="padding: 0; margin:0">
-                        <img style="margin: 1rem 0 0.5rem" 
-                             src="{thumbnail.url}" width="{thumbnail.width}" height="{thumbnail.height}" loading="lazy"/>
-                        <figcaption style="color: #777;">{obj.image_caption or ''}</figcaption>
+                    <figure style="padding:0; margin:0;">
+                        <img
+                            src="{thumbnail.url}"
+                            width="{thumbnail.width}"
+                            height="{thumbnail.height}"
+                            alt="{obj.image_caption or ''}"
+                            style="margin:1rem 0 0.5rem; display:block;"
+                        />
+                        <figcaption style="color:#777;">
+                            {obj.image_caption or ''}
+                        </figcaption>
                     </figure>
-                </div>
                 """
 
             html_output += f"""
-            <article>
-                {image_html}
-                <a href="{obj.absolute_url()}" style="text-decoration: none">
-                    <h3 style="color: #375d9a; line-height; margin-top: 0; margin-bottom: .5rem; line-height: 1.2;font-size: 30px; font-weight: 300;">{obj.Title()}</h3>
-                </a>
-                <p class="lead documentDescription" style="font-size: 18px; border-bottom: 1px solid #0095CA !important;
-                color: #D62265 !important;
-                padding-bottom: 0.5em;
-                margin-bottom: 1em;
-                font-weight: 200 !important;">{obj.Description()}</p>
-                <div>{obj.text.output if obj.text else ''}</div>"""
-                
+            <tr>
+                <td style="
+                    background-color:#ffffff;
+                    text-align:left;
+                    padding-left:20px;
+                    padding-right:20px;
+                ">
+
+                    {image_html}
+
+                    <a href="{obj.absolute_url()}" style="text-decoration:none;">
+                        <h3 style="
+                            color:#375d9a;
+                            margin-top:1rem;
+                            margin-bottom:0.5rem;
+                            line-height:1.2;
+                            font-size:30px;
+                            font-weight:300;
+                        ">
+                            {obj.Title()}
+                        </h3>
+                    </a>
+
+                    <p class="lead documentDescription" style="
+                        font-size:18px;
+                        border-bottom:1px solid #0095CA !important;
+                        color:#D62265 !important;
+                        padding-bottom:0.5em;
+                        margin-bottom:1em;
+                        font-weight:200 !important;
+                    ">
+                        {obj.Description()}
+                    </p>
+
+                    <div>
+                        {obj.text.output if obj.text else ''}
+                    </div>
+            """
+
             if obj.portal_type == 'Proloog':
                 html_output += f"""
-                    <p><b>Startdatum:</b> {obj.startdatum.strftime('%d-%m-%Y')}</p>"""
-            
-            html_output += f"""   
-                <a href="{obj.absolute_url()}"
-                   style="color: #fff; background-color: #D62265;  
-                   border: 1px solid #D62265; padding: 0.55rem 1rem; 
-                   font-size: 1.2rem; line-height: 1.75; 
-                   text-decoraration: none;
-                   border-radius: 0.175rem">Lees verder</a>
-            </article>
-            <div style="padding: 2rem 0; margin: 1rem 0;"><hr/></div>
+                    <p>
+                        <b>Startdatum:</b>
+                        {obj.startdatum.strftime('%d-%m-%Y')}
+                    </p>
+                """
+
+            html_output += f"""
+                    <a
+                        href="{obj.absolute_url()}"
+                        style="
+                            color:#fff;
+                            background-color:#D62265;
+                            border:1px solid #D62265;
+                            padding:0.55rem 1rem;
+                            font-size:1.2rem;
+                            line-height:1.75;
+                            text-decoration:none;
+                            border-radius:0.175rem;
+                        "
+                    >
+                        Lees verder
+                    </a>
+
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:2rem 20px; background-color:#ffffff;">
+                    <hr style="border:0; border-top:1px dotted #c0c0c0;">
+                </td>
+            </tr>
             """
-        
-        return html_output
+
+        return html_output 
 
 
     def send_email(self, context, request, recipient, fullname):    

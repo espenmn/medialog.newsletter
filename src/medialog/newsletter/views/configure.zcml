@@ -15,6 +15,20 @@
     layer="medialog.newsletter.interfaces.IMedialogNewsletterLayer"
     />
 
+    <browser:page
+        name="import-emaillist"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        class=".emaillist.EmailList"
+        permission="cmf.ManagePortal"
+    />
+
+    <browser:page
+      name="export-newsletter-emails"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        class=".emaillist.ExportNewsletterEmails"
+        permission="cmf.ManagePortal"
+    />
+
   <browser:page
     name="subscribe"
     for="Products.CMFPlone.interfaces.siteroot.IPloneSiteRoot"

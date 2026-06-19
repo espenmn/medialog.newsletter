@@ -39,3 +39,4 @@ venv/
 # excludes
 src/medialog/newsletter/views/send_news_letter_view-kopi.py
 src/medialog/newsletter/views/send_news_letter_view-kopi 2.py
+src/medialog/newsletter/views/emaillist_import-kopi.py

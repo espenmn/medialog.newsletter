@@ -72,7 +72,6 @@ class IMedialogNewsletterSettings(model.Schema):
         required=True,
     )
     
-    
-    
+
 
 alsoProvides(IMedialogNewsletterSettings, IMedialogControlpanelSettingsProvider)

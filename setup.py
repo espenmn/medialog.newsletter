@@ -55,7 +55,9 @@ setup(
         'plone.api>=1.8.4',
         'plone.app.dexterity',
         'medialog.controlpanel',
-        'premailer'
+        'premailer',
+        'pandas',
+        'openpyxl' 
         # 'brevo_python'
     ],
     extras_require={
