@@ -276,6 +276,7 @@ class SendNewsLetterView(BrowserView):
 
                     <p class="lead documentDescription" 
                         style="
+                        display: block;
                         font-size:18px;
                         border-bottom:1px solid #0095CA !important;
                         color:#D62265 !important;
@@ -300,9 +301,10 @@ class SendNewsLetterView(BrowserView):
                 """
 
             html_output += f"""
-                    <p style="display: block;
+                    <p style="display: inline-block;
                             margin: 16px 0 0 0;
-                            font-size:16px;
+                            font-size:8px;
+                            border-radius: 5px;
                         ">
                         <a
                         href="{obj.absolute_url()}"
@@ -311,7 +313,7 @@ class SendNewsLetterView(BrowserView):
                             background-color:#D62265;
                             border: 1px solid #D62265;
                             padding: 9px 15px;
-                            margin: 16px 0 0 0;
+                            margin: 8px 0 0 0;
                             font-size:16px;
                             text-decoration:none;
                             border-radius: 5px;
