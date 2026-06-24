@@ -141,7 +141,7 @@ class SendNewsLetterView(BrowserView):
                             color:#D62265;
                             font-weight:400 !important;
                             font-size:34px;
-                            margin-top:0;
+                            margin:0;
                             line-height:1.2;
                         ">
                             {title}
@@ -175,7 +175,7 @@ class SendNewsLetterView(BrowserView):
                 </tr>
 
                 <tr>
-                    <td style="padding:0 20px;">
+                    <td style="padding:0 20px; margin-bottom: 20px ">
                         {disclaimer_text}
                     </td>
                 </tr>
@@ -263,8 +263,7 @@ class SendNewsLetterView(BrowserView):
                     
                     <h3 style="
                             color:#375d9a;
-                            margin-top:14px;
-                            margin-bottom:4px;
+                            margin:14px 0 1px;
                             line-height:1.2;
                             font-size:30px;
                             font-weight:300;
@@ -279,14 +278,14 @@ class SendNewsLetterView(BrowserView):
                         font-size:18px;
                         border-bottom:1px solid #0095CA !important;
                         color:#D62265 !important;
-                        padding-bottom:0.5em;
-                        margin-bottom:1em;
+                        padding-bottom: 7px;
+                        margin-bottom: 7px;
                         font-weight:200 !important;
                     ">
                         {obj.Description()}
                     </p>
 
-                    <div>
+                    <div style="font-size:14px;">
                         {obj.text.output if obj.text else ''}
                     </div>
             """
