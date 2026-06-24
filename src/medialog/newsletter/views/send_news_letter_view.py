@@ -285,7 +285,7 @@ class SendNewsLetterView(BrowserView):
                         {obj.Description()}
                     </p>
 
-                    <div style="font-size:14px;">
+                    <div style="font-size: 14px;">
                         {obj.text.output if obj.text else ''}
                     </div>
             """
@@ -299,14 +299,15 @@ class SendNewsLetterView(BrowserView):
                 """
 
             html_output += f"""
-                    <a
+                    <p><a
                         href="{obj.absolute_url()}"
                         style="
+                            display: block;
                             color:#fff;
                             background-color:#D62265;
                             border: 1px solid #D62265;
                             padding: 9px 15px;
-                            margin: 14px 0 0 0;
+                            margin: 16px 0 0 0;
                             font-size:16px;
                             line-height: 1.75;
                             text-decoration:none;
@@ -315,6 +316,7 @@ class SendNewsLetterView(BrowserView):
                     >
                         Lees verder
                     </a>
+                    </p>
 
                 </td>
             </tr>
