@@ -158,7 +158,7 @@ class SendNewsLetterView(BrowserView):
 
                         {context.text.output if context.text else ''}
 
-                        <div style="padding:1rem 0; margin:1rem 0;">
+                        <div style="padding:14px 0 0; margin: 14px 0 0;">
                             <hr style="border:0; border-top:1px dotted #c0c0c0;">
                         </div>
                     </td>
@@ -241,7 +241,7 @@ class SendNewsLetterView(BrowserView):
                             width="{thumbnail.width}"
                             height="{thumbnail.height}"
                             alt="{obj.image_caption or ''}"
-                            style="margin:1rem 0 0.5rem; display:block;"
+                            style="margin:12px 0 8px; display:block;"
                         />
                         <figcaption style="color:#777;">
                             {obj.image_caption or ''}
@@ -260,18 +260,20 @@ class SendNewsLetterView(BrowserView):
 
                     {image_html}
 
-                    <a href="{obj.absolute_url()}" style="text-decoration:none;">
-                        <h3 style="
+                    
+                    <h3 style="
                             color:#375d9a;
                             margin-top:1rem;
-                            margin-bottom:0.5rem;
+                            margin-bottom:8px;
                             line-height:1.2;
                             font-size:30px;
                             font-weight:300;
                         ">
+                        <a href="{obj.absolute_url()}" style="text-decoration:none; color:#375d9a;">
                             {obj.Title()}
-                        </h3>
-                    </a>
+                        </a>
+                    </h3>
+                    
 
                     <p class="lead documentDescription" style="
                         font-size:18px;
@@ -304,11 +306,11 @@ class SendNewsLetterView(BrowserView):
                             color:#fff;
                             background-color:#D62265;
                             border:1px solid #D62265;
-                            padding:0.55rem 1rem;
-                            font-size:1.2rem;
+                            padding:9px 15px;
+                            font-size:16px;
                             line-height:1.75;
                             text-decoration:none;
-                            border-radius:0.175rem;
+                            border-radius:5px;
                         "
                     >
                         Lees verder
@@ -318,7 +320,7 @@ class SendNewsLetterView(BrowserView):
             </tr>
 
             <tr>
-                <td style="padding:2rem 20px; background-color:#ffffff;">
+                <td style="padding:18px 20px; background-color:#ffffff;">
                     <hr style="border:0; border-top:1px dotted #c0c0c0;">
                 </td>
             </tr>
