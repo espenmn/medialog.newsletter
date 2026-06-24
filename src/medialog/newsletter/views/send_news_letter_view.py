@@ -175,7 +175,7 @@ class SendNewsLetterView(BrowserView):
                 </tr>
 
                 <tr>
-                    <td style="padding:0 20px; margin-bottom: 20px ">
+                    <td style="padding:0 20px;">
                         {disclaimer_text}
                     </td>
                 </tr>
@@ -304,12 +304,13 @@ class SendNewsLetterView(BrowserView):
                         style="
                             color:#fff;
                             background-color:#D62265;
-                            border:1px solid #D62265;
-                            padding:9px 15px;
+                            border: 1px solid #D62265;
+                            padding: 9px 15px;
+                            margin: 14px 0 0 0;
                             font-size:16px;
-                            line-height:1.75;
+                            line-height: 1.75;
                             text-decoration:none;
-                            border-radius:5px;
+                            border-radius: 5px;
                         "
                     >
                         Lees verder
