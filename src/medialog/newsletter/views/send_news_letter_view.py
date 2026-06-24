@@ -274,12 +274,13 @@ class SendNewsLetterView(BrowserView):
                     </h3>
                     
 
-                    <p class="lead documentDescription" style="
+                    <p class="lead documentDescription" 
+                        style="
                         font-size:18px;
                         border-bottom:1px solid #0095CA !important;
                         color:#D62265 !important;
                         padding-bottom: 7px;
-                        margin-bottom: 7px;
+                        margin: 0 0 7px;
                         font-weight:200 !important;
                     ">
                         {obj.Description()}
@@ -299,17 +300,19 @@ class SendNewsLetterView(BrowserView):
                 """
 
             html_output += f"""
-                    <p><a
+                    <p style="display: block;
+                            margin: 16px 0 0 0;
+                            font-size:16px;
+                        ">
+                        <a
                         href="{obj.absolute_url()}"
-                        style="
-                            display: block;
+                        style="display: block;
                             color:#fff;
                             background-color:#D62265;
                             border: 1px solid #D62265;
                             padding: 9px 15px;
                             margin: 16px 0 0 0;
                             font-size:16px;
-                            line-height: 1.75;
                             text-decoration:none;
                             border-radius: 5px;
                         "
