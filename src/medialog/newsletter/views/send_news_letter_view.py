@@ -305,6 +305,8 @@ class SendNewsLetterView(BrowserView):
                             margin: 16px 0 0 0;
                             font-size:8px;
                             border-radius: 5px;
+                            background-color:#D62265;
+                            border: 1px solid #D62265;
                         ">
                         <a
                         href="{obj.absolute_url()}"
