@@ -263,7 +263,7 @@ class SendNewsLetterView(BrowserView):
                     
                     <h3 style="
                             color:#375d9a;
-                            margin:14px 0 1px;
+                            margin:14px 0 9px;
                             line-height:1.2;
                             font-size:30px;
                             font-weight:300;
