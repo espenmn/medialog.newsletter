@@ -306,7 +306,7 @@ class SendNewsLetterView(BrowserView):
                         ">
                         <a
                         href="{obj.absolute_url()}"
-                        style="display: block;
+                        style="display: inline-block;
                             color:#fff;
                             background-color:#D62265;
                             border: 1px solid #D62265;
