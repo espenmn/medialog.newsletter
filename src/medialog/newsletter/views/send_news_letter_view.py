@@ -315,7 +315,6 @@ class SendNewsLetterView(BrowserView):
                             background-color:#D62265;
                             border: 1px solid #D62265;
                             padding: 9px 15px;
-                            margin: 8px 0 0 0;
                             font-size:16px;
                             text-decoration:none;
                             border-radius: 5px;
