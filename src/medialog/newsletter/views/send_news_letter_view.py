@@ -243,7 +243,7 @@ class SendNewsLetterView(BrowserView):
                         <img
                             src="{thumbnail.url}" 
                             width="{thumbnail.width}" 
-                            height="{thumbnail.height}" />
+                            height="{thumbnail.height}" 
                             alt="{obj.image_caption or ''}"
                             style="margin:12px 0 8px; display:block;"
                         />
