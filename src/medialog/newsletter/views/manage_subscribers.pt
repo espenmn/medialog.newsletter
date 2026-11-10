@@ -38,7 +38,7 @@
              </div>
               </form>
           </div>
-          <div class="card" tal:condition="view/subscribers_json|None">
+          <!-- <div class="card" tal:condition="view/subscribers_json|None">
             <div class="card-body">
               <h3 i18n:translate="heading_current_subscribers">Huidige abonnees</h3>
               <table class="listing pat-datatables" data-pat-datatables='{
@@ -51,9 +51,9 @@
                 }'>
               </table>
             </div>
-          </div>
+          </div> -->
 
-          <div class="card">
+          <!-- <div class="card">
             <div class="card-body">
               <h3 i18n:translate="heading_current_subscribers">Unsubscribed</h3>
               <table class="listing pat-datatables">
@@ -72,7 +72,7 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </div> -->
           </div>
 
 
