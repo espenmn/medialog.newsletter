@@ -312,7 +312,6 @@ class SubscribeView(BrowserView):
         messages = IStatusMessage(self.request)
         
         # Get uploaded file
-        import pdb; pdb.set_trace()
         fileobj = self.request.form.get('excel_file')
         if not fileobj or isinstance(fileobj, str):
             messages.add("No file uploaded", type="error")
