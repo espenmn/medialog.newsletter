@@ -49,6 +49,34 @@ class SubscribeView(BrowserView):
         request = self.request
         email = request.get("email")
         
+
+        site = getSite()
+        annotations = IAnnotations(site)
+
+        storage = annotations[SUBSCRIBERS_KEY]
+        
+        
+        # Convert old format (list of email strings) to new format
+        changed = False
+        for i, item in enumerate(storage):
+            if isinstance(item, str):
+                storage[i] = {
+                    "email": item,
+                    "created": None,
+                    "status": "confirmed",
+                }
+                changed = True
+
+            elif isinstance(item, dict):
+                # Ensure all required fields exist
+                item.setdefault("created", None)
+                item.setdefault("status", "confirmed")
+                changed = True
+
+        if changed:
+            annotations[SUBSCRIBERS_KEY] = PersistentList(storage)
+            
+        
         if 'form.button_exportexcel' in self.request.form:
             return self.export_excel()
         elif 'form.button_importexcel' in self.request.form:
