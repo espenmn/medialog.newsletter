@@ -16,7 +16,7 @@ from Products.CMFPlone.utils import getSite
 from io import BytesIO
 import pandas as pd
 
-SUBSCRIBERS_KEY = 'medialog.newsletter.subscribers'
+SUBSCRIBERS_KEY = 'newsletter.subscribers'
 
 
 # NOTE this code does not work for Form (only BrowserView)

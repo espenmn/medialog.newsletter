@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<registry xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.newsletter">
+
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.confirm_text" 
+  interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="confirm_text">
+  </record>
+
+  <!-- <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.day_limit" 
+    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="day_limit">
+  </record> -->
+
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.image_width" 
+    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="image_width">
+  </record>
+
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.image_height" 
+    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="image_height">
+  </record>
+
+  <record name="medialog.newsletter.interfaces.IMedialogNewsletterSettings.image_mode" 
+    interface="medialog.newsletter.interfaces.IMedialogNewsletterSettings" field="image_mode">
+  </record>
+
+</registry>
+

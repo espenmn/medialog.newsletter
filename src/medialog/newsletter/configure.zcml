@@ -7,12 +7,6 @@
 
   <i18n:registerTranslations directory="locales" />
 
-  <!--
-    Be careful if you use general includeDependencies, it can have side effects!
-    Better import explicit packages or configurations ;)
-  -->
-  <!--<includeDependencies package="." />-->
-
   <include package=".browser" />
 
   <include file="permissions.zcml" />
@@ -25,6 +19,14 @@
       provides="Products.GenericSetup.interfaces.EXTENSION"
       post_handler=".setuphandlers.post_install"
       />
+
+  <genericsetup:registerProfile
+      name="upgrade_to_1010"
+      title="Upgrade profile for medialog.newsletter from 1000 to 1010"
+      directory="profiles/upgrade_to_1"
+      description="Upgrades to version 1.1 medialog.newsletter add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+     />
 
   <genericsetup:registerProfile
       name="uninstall"

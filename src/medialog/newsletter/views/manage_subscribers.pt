@@ -10,47 +10,83 @@
 
             <h1 i18n:translate="heading_subscribe_unsubscribe">Aanmelden/afmelden voor e-maillijst</h1>
 
-            <form method="post" action="${context/absolute_url}/@@manage-subscribers">
+            <form method="post" action="${context/absolute_url}/@@manage-subscribers" enctype="multipart/form-data">
               <div class="form-group xcard">
 
-                <textarea id="inputEmail" class="form-control" name="email" placeholder="Voer een lijst met e-mailadressen in, één per regel" i18n:attributes="placeholder email_list_placeholder;"
-          required></textarea>
-          <hr/>
-          <button class="button btn btn-primary" type="submit" name="form.subscribed" i18n:translate="button_subscribe">Aanmelden</button>
+                <textarea id="inputEmail" class="form-control" name="email" placeholder="Voer een lijst met e-mailadressen in, één per regel" i18n:attributes="placeholder email_list_placeholder;"></textarea>
+                <hr/>
+                <button class="button btn btn-primary" type="submit" name="form.subscribed" i18n:translate="button_subscribe">Aanmelden</button>
 
                 <button class="button btn btn-secondary" type="submit" name="form.unsubscribe" i18n:translate="button_unsubscribe">Afmelden</button>
 
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body">
-            <h3 i18n:translate="heading_current_subscribers">Huidige abonnees</h3>
-            <ul>
-              <tal:loop repeat="email view/subscribers">
-                <li tal:content="email">Email</li>
-              </tal:loop>
-            </ul>
-          </div>
-        </div>
+                <button class="button button-delete btn btn-warning" 
+                      name="form.button_deleteall"
+                      type="submit"  
+                      onclick="return confirm('Weet je zeker dat je alle abonnees wilt verwijderen? Dit kan niet ongedaan worden gemaakt.');"                      
+                      i18n:translate="button_button_deleteall">Verwijderen ALLE abonnees</button>
 
-        <style>
+             
+            </div>
+            <hr/>
+              <div class="form-group upload">
+                <!-- File upload -->
+                <h3 i18n:translate="heading_excelbuttons">Excel</h3>
+                <input type="file" id="excel_file" name="excel_file" accept=".xlsx" class="form-control" />
+                <hr/>
+                <button class="button btn btn-primary" type="submit"   name="form.button_importexcel" i18n:translate="button_importexcel">Excel import</button>
+                <button class="button btn btn-secondary" type="submit" name="form.button_exportexcel" i18n:translate="button_exportexcel">Excel export</button>
+             </div>
+              </form>
+          </div>
+          <div class="card" tal:condition="view/subscribers_json|None">
+            <div class="card-body">
+              <h3 i18n:translate="heading_current_subscribers">Huidige abonnees</h3>
+              <table class="listing pat-datatables" data-pat-datatables='{
+                  "data": ${python: view.subscribers_json()},
+                  "columns": [
+                    {"data": "email", "title": "Email"},
+                    {"data": "created", "title": "Aangemeld"},
+                    {"data": "status", "title": "Status"}
+                  ]
+                }'>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h3 i18n:translate="heading_current_subscribers">Unsubscribed</h3>
+              <table class="listing pat-datatables">
+                <thead>
+                  <tr>
+                    <th i18n:translate="">Email</th>
+                    <th i18n:translate="">Afgemeld</th>
+                    <th i18n:translate="">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr tal:repeat="subscriber python: view.unsubscribers()">
+                    <td tal:content="python: subscriber['email']">Email</td>
+                    <td tal:content="python: subscriber['created'].Date()">Aangemeld</td>
+                    <td tal:content="python: subscriber.get('status') or ''"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
+          <style>
           .above-content-wrapper {padding-top: 2rem;}
           .border-1 { border: 1px dotted silver; padding: 2rem; background: white }
           .outer-wrapper { background: whitesmoke }
           .card { margin-top: 3rem; margin-bottom: 2rem; max-width: 45rem; }
-        </style>
+          </style>
+         
 
       </metal:block>
     </metal:content-core>
   </body>
 </html>
 
-
-
-76 / 5 000
-
-
-
-Huidige abonnees
+ 

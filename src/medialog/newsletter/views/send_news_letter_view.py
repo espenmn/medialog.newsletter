@@ -56,9 +56,7 @@ class SendNewsLetterView(BrowserView):
         if 'groupmail' in request.form:
             self.send_groupmail()
         else:
-            self.send_testmail() 
-        # return self.index()
-        # return self.request.response.redirect(self.context.absolute_url())
+            self.send_testmail()  
     
     @property
     def footer_text(self):
@@ -226,10 +224,16 @@ class SendNewsLetterView(BrowserView):
             return ''
 
         html_output = ''
-
+        
+        image_width  =  api.portal.get_registry_record('image_width', interface=IMedialogNewsletterSettings)
+        image_height =  api.portal.get_registry_record('image_height', interface=IMedialogNewsletterSettings)
+        image_mode  =  api.portal.get_registry_record('image_mode', interface=IMedialogNewsletterSettings)
+            
         for obj in items:
             scales = getMultiAdapter((obj, self.request), name="images")
-            thumbnail = scales.scale('image', width=600)
+            #thumbnail = scales.scale('image', width=600)
+            
+            thumbnail = scales.scale('image', width=image_width, height=image_height, mode=image_mode)
 
             image_html = ''
 
@@ -237,9 +241,9 @@ class SendNewsLetterView(BrowserView):
                 image_html = f"""
                     <figure style="padding:0; margin:0;">
                         <img
-                            src="{thumbnail.url}"
-                            width="{thumbnail.width}"
-                            height="{thumbnail.height}"
+                            src="{thumbnail.url}" 
+                            width="{thumbnail.width}" 
+                            height="{thumbnail.height}" />
                             alt="{obj.image_caption or ''}"
                             style="margin:12px 0 8px; display:block;"
                         />
@@ -371,15 +375,7 @@ class SendNewsLetterView(BrowserView):
             html_part.attach(html_text)
             outer.attach(html_part)
             # # Finally send mail.
-            mailhost.send(outer.as_string())              
-            
-            # if we want 'not html we can use api portal
-            # api.portal.send_email(
-            #     recipient = formataddr((fullname, recipient)),
-            #     sender = formataddr((self.mail_settings.email_from_name, self.mail_settings.email_from_address)),         
-            #     subject = title, 
-            #     body = message
-            # )                       
+            mailhost.send(outer.as_string())    
 
             messages.add(_("sent_mail_message",  default=u"Sent to  $email",
                                                  mapping={'email': recipient },
@@ -404,22 +400,12 @@ class SendNewsLetterView(BrowserView):
     def send_emails(self, context, request, recipients):
         registry = getUtility(IRegistry)
         self.mail_settings = registry.forInterface(IMailSchema, prefix="plone")
-        #  mailhost = getToolByName(aq_inner(self.context), "MailHost")
-        mailhost = getToolByName(context, "MailHost")
+        # mailhost = getToolByName(context, "MailHost")
         messages = IStatusMessage(request)
 
-        annotations = IAnnotations(context)
-        SENT_KEY = "sent_data"
-
-        # Load sent data
-        sent_data = annotations.get(SENT_KEY, {})
-        today_str = date.today().isoformat()
-
-        # Get already sent list for today
-        already_sent = sent_data.get(today_str, [])
-
-        # Filter recipients
-        recipients_to_send = [r for r in recipients if r not in already_sent]
+        annotations, sent_data, today_str, already_sent = self._get_sent_state(context)
+        recipients_to_send = self._get_recipients_to_send(context, recipients, already_sent)
+        
         if not recipients_to_send:
             messages.add(_("All recipients have already received the mail today."), type="info")
             return
@@ -427,44 +413,40 @@ class SendNewsLetterView(BrowserView):
         title = context.Title()
         message = self.construct_message()
         smtp_host = self.mail_settings.smtp_host
-        smtp_port = self.mail_settings.smtp_port
+        smtp_port = self.mail_settings.smtp_port       
         newsletterfrom =  api.portal.get_registry_record('newsletter_from', interface=IMedialogNewsletterSettings)
 
+        sent_emails = []
+        
         try:
             for recipient in recipients_to_send:
+                
                 msg = EmailMessage()
                 msg['Subject'] = title
                 msg['From'] = formataddr((self.mail_settings.email_from_name,  newsletterfrom))
-                msg['To'] = formataddr((recipient, recipient))
+                # msg['To'] = formataddr((recipient, recipient))
+                msg['To'] =  recipient
                 msg.add_alternative(message, subtype='html')                
                 
                 if not recipient in already_sent:
                     with smtplib.SMTP(smtp_host, smtp_port) as server:
                         server.sendmail(
                             from_addr= newsletterfrom,
-                            to_addrs=[recipient],
+                            to_addrs=[recipient["email"]],
                             msg=msg.as_string()
                         )
 
-                    # Update sent record
-                    already_sent.append(recipient)
-                    # Save sent data back to annotations
-                    sent_data[today_str] = already_sent
-                    annotations[SENT_KEY] = sent_data
-                    context._p_changed = True  # mark as modified for persistence
-                    transaction.commit()
-                
                     # Add message to user UI
                     messages.add(
                         _("sent_mail_message",
                         default=u"Sent to $email",
-                        mapping={'email': recipient}),
+                        mapping={'email': recipient["email"]}),
                         type="info"
                     )
-                
-                # sent_data[today_str] = already_sent
-                # annotations[SENT_KEY] = sent_data
-                # context._p_changed = True  # mark as modified for persistence
+                    
+                    sent_emails.append(recipient["email"])
+
+                self._mark_as_sent(context, annotations, sent_data, today_str, already_sent, sent_emails)
 
 
         except Exception as e:
@@ -494,6 +476,53 @@ class SendNewsLetterView(BrowserView):
                                                  type="error")
             
         self.request.response.redirect(self.context.absolute_url())
+        
+        
+         
+             
+    def _get_sent_state(self, context):
+        annotations = IAnnotations(context)
+        SENT_KEY = "sent_data"
+
+        sent_data = annotations.get(SENT_KEY, {})
+        today_str = date.today().isoformat()
+        already_sent = sent_data.get(today_str, [])
+
+        return annotations, sent_data, today_str, already_sent
+
+
+    def _mark_as_sent(self, context, annotations, sent_data, today_str, already_sent, new_emails):
+        already_sent.extend(new_emails)
+        sent_data[today_str] = already_sent
+        annotations["sent_data"] = sent_data
+        context._p_changed = True
+        transaction.commit()
+
+
+    def _get_recipients_to_send(self, context, recipients, already_sent):
+        
+        return [
+            r for r in recipients
+            if (
+                r.get("email")
+                and r["status"] == "confirmed"
+                and r["email"] not in already_sent
+            )
+        ]  
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         

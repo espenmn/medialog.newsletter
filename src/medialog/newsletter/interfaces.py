@@ -51,9 +51,14 @@ class IMedialogNewsletterSettings(model.Schema):
         fields=[
             'footer_text',
             'disclaimer_text',
-            'newsletter_from'
+            'confirm_text',
+            'newsletter_from',
+            'image_width',
+            'image_height',
+            'image_mode'
             ],
         )
+    
     
     widget(footer_text=RichTextFieldWidget)
     footer_text = RichTextFieldRegistry(
@@ -71,6 +76,40 @@ class IMedialogNewsletterSettings(model.Schema):
         title="Newsletter email from address",
         required=True,
     )
+    
+    
+    confirm_text = schema.Text(
+        title="Text to send in confirm email",
+        required=True,
+    )
+    
+    # api_key = schema.TextLine(
+    #     title="API KEY",
+    #     required=False,
+    # )
+    
+    image_width = schema.Int(
+        title="Max Image width in newsletter mail",
+        required=True,
+        default=600,
+    )
+    
+    image_height = schema.Int(
+        title="Max Image height in newsletter mail",
+        required=True,
+        default=400,
+    )
+    
+    image_mode = schema.Choice(
+        title="Image cropp mode",
+        required=True,
+        values=["scale", "contain", "cover"]
+    )
+    
+    # day_limit = schema.Bool(
+    #     title="Limit to one newsletter a day",
+    #     required=False
+    # )
     
 
 

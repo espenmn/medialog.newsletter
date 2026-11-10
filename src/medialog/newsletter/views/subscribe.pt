@@ -1,8 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
   xmlns:metal="http://xml.zope.org/namespaces/metal"
   xmlns:tal="http://xml.zope.org/namespaces/tal"
-  xmlns:i18n="http://xml.zope.org/namespaces/i18n" 
-  i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.newsletter" metal:use-macro="context/main_template/macros/master">
   <body>
     <metal:content-core fill-slot="content">
       <metal:block define-macro="content">
@@ -14,24 +13,28 @@
             <form method="post" action="${context/absolute_url}/@@subscribe">
               <div class="form-group xcard">
 
-                <input id="inputEmail" class="form-control" type="email" name="email"
-                       placeholder="Voer uw e-mailadres in"
-                       i18n:attributes="placeholder email_placeholder;"
+                <input id="inputEmail" class="form-control" type="email" name="email" placeholder="Voer uw e-mailadres in" i18n:attributes="placeholder email_placeholder;"
                        required />
 
                 <hr/>
 
-                <button class="button btn btn-primary" type="submit" name="form.subscribed"
-                        i18n:translate="button_subscribe">Aanmelden</button>
+                <button class="button btn btn-primary" type="submit" name="form.subscribed" i18n:translate="button_subscribe">Aanmelden</button>
 
-                <button class="button btn btn-secondary" type="submit" name="form.unsubscribe"
-                        i18n:translate="button_unsubscribe">Afmelden</button>
+                <button class="button btn btn-secondary" type="submit" name="form.unsubscribe" i18n:translate="button_unsubscribe">Afmelden</button>
 
+                <hr/>
+
+                <p>
+                  <i>Wanneer u zich aanmeldt voor onze nieuwsbrief dan ontvangt u van ons een e-mail met een link ter bevestiging van uw aanmelding.</i>
+                </p>
+                <p>
+                  <i>When you sign up for our newsletter, you will receive an email from us with a link to confirm your registration.</i>
+                </p>
               </div>
             </form>
           </div>
         </div>
-        
+
         <style>
           .above-content-wrapper {padding-top: 2rem; margin-top: 2rem;}
           .border-1 { border: 1px dotted silver; padding: 2rem; background: white }

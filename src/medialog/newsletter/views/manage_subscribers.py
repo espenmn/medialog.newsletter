@@ -10,13 +10,33 @@ from zope.component import getMultiAdapter
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFPlone.utils import getSite
 from email.utils import parseaddr
-# from medialog.newsletter.utils import get_subscriber_emails
+from DateTime import DateTime
+import json
+from plone import api
+# import uuid
+from urllib.parse import urlencode
+from zope.i18nmessageid import MessageFactory
+_ = MessageFactory('medialog.imprintnewsletter')
+from medialog.newsletter.interfaces import IMedialogNewsletterSettings
+
+import io
+# from datetime import datetime
+# import xlsxwriter  # You need this package installed in your Plone/Python environment
+from openpyxl import Workbook
+from openpyxl import load_workbook
+import pandas as pd
+
+ 
+
 
 SUBSCRIBERS_KEY = 'medialog.newsletter.subscribers'
+UNSUBSCRIBERS_KEY = 'medialog.newsletter.unsubscribers'
 
 class IManageSubscribersView(Interface):
     """ Marker Interface for IManageSubscribersView"""
 
+class IMSubscribeView(Interface):
+    """ Marker Interface for ISubscribeView"""
  
 
 class SubscribeView(BrowserView):
@@ -26,54 +46,350 @@ class SubscribeView(BrowserView):
         return '/@@subscribe'
 
     def __call__(self):
-        if 'form.subscribed' in self.request.form:
+        request = self.request
+        email = request.get("email")
+        
+        if 'form.button_exportexcel' in self.request.form:
+            return self.export_excel()
+        elif 'form.button_importexcel' in self.request.form:
+            fileobj = self.request.form['excel_file']
+            if fileobj :
+                return self.import_excel(fileobj)
+            else:
+                messages = IStatusMessage(self.request)  
+                messages.add(f"No file or bad file.", type="error") 
+        elif 'form.subscribed' in self.request.form:
             return self._handle_add()
         elif 'form.unsubscribe' in self.request.form:
             return self._handle_remove()
+        elif 'form.button_deleteall' in self.request.form:
+            return self._deleteall()
+        elif email:
+            return self.confirm(email)
+        
         return self.template()  # Calls template, avoids recursion
+    
+    
+    def is_confirming(self):
+        subscribers = self._get_subscribers()
+        request = self.request
+        email = request.get("email")
+        for subscriber in subscribers:
+            if subscriber.get('email', '') == email:
+                return True
+        return False
+        
+    
+    def confirm(self, email):
+        messages = IStatusMessage(self.request)  
+        subscribers = self._get_subscribers()
+        
+        for subscriber in subscribers:
+            if subscriber.get('email', '') == email:
+                subscriber['status'] = 'confirmed'
+            
+            messages.add(f"Subscription confirmed: {email}:", type="info")
+            api.portal.show_message(
+                        "Subscription confirmed.",
+                        type="info"
+                )
+                    
+        return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
+    
     
     def is_probably_email(self, s):
         name, addr = parseaddr(s)
         return '@' in addr and '.' in addr.split('@')[-1]
 
-    def _get_storage(self):    
+    def _get_subscribers(self):    
         site = getSite()
         annotations = IAnnotations(site)
         if SUBSCRIBERS_KEY not in annotations:
             annotations[SUBSCRIBERS_KEY] = PersistentList()
         return annotations[SUBSCRIBERS_KEY]
 
+    def _get_unsubscribers(self):    
+        site = getSite()
+        annotations = IAnnotations(site)
+        if UNSUBSCRIBERS_KEY not in annotations:
+            annotations[UNSUBSCRIBERS_KEY] = PersistentList()
+        return annotations[UNSUBSCRIBERS_KEY]
+   
+    def subscribers_json(self):
+        data = []
+        if self.subscribers():
+            for s in self.subscribers():
+                data.append({
+                    "email": s.get("email"),
+                    "created": s.get("created").Date() if s.get("created") else "",
+                    "status": s.get("status") if s.get("status") else "",
+            })
+        # return data
+        return json.dumps(data)
+
+    def _deleteall(self):    
+        site = getSite()
+        annotations = IAnnotations(site)
+        annotations[SUBSCRIBERS_KEY] = PersistentList()
+        return self.template()    
+
+    # def _get_storage(self):    
+    #     site = getSite()
+    #     annotations = IAnnotations(site)
+    #     if SUBSCRIBERS_KEY not in annotations:
+    #         annotations[SUBSCRIBERS_KEY] = PersistentList()
+    #     return annotations[SUBSCRIBERS_KEY]
+    
+    def _get_storage(self):
+        site = getSite()
+        annotations = IAnnotations(site)
+
+        if SUBSCRIBERS_KEY not in annotations:
+            annotations[SUBSCRIBERS_KEY] = PersistentList()
+            return annotations[SUBSCRIBERS_KEY]
+
+        storage = annotations[SUBSCRIBERS_KEY]
+        
+        
+        # Convert old format (list of email strings) to new format
+        changed = False
+        for i, item in enumerate(storage):
+            if isinstance(item, str):
+                storage[i] = {
+                    "email": item,
+                    "created": None,
+                    "status": "confirmed",
+                }
+                changed = True
+
+            elif isinstance(item, dict):
+                # Ensure all required fields exist
+                item.setdefault("created", None)
+                item.setdefault("status", "confirmed")
+                changed = True
+
+        if changed:
+            annotations[SUBSCRIBERS_KEY] = PersistentList(storage)
+
+        return annotations[SUBSCRIBERS_KEY]
+
     def _handle_add(self):
         email = self.request.form.get('email', '').strip().lower()
         messages = IStatusMessage(self.request)
         if email:
-            storage = self._get_storage()
             for email in email.split():
-                if email not in storage and self.is_probably_email(email):
-                    storage.append(email)
-                    messages.add("Successfully subscribed.", type="info")
-                else:
-                    messages.add("Already subscribed or not valid.", type="warning")
+                subscribers = self._get_subscribers()
+                for email in email.split():
+                    exists = any(
+                        item.get('email') == email 
+                        for item in subscribers
+                    )
+
+                    if not exists and self.is_probably_email(email):
+                        subscribers = self._get_subscribers()        
+                        subscribers.append({
+                            'email': email,
+                            "created": DateTime(),
+                            "status": ""
+                        })
+                        messages.add("Successfully subscribed. Succesvol geabonneerd.", type="info")
+                        messages.add("Please confirm from email sent. Bevestig de verzonden e-mail.", type="info")
+                        
+                        # send confirm email
+                        # Link back to SAME PAGE
+                        params = {
+                            'email': email,
+                        }
+                        
+                        confirm_url = "{}/@@subscribe?{}".format(
+                            self.context.absolute_url(),
+                            urlencode(params)
+                        )
+                        
+                        confirm_text = api.portal.get_registry_record('confirm_text', interface=IMedialogNewsletterSettings)
+        
+                            
+                        # if 'subscribe.pt' in self.template.filename:
+                        #     confirm_url = "{}/@@subscribe?{}".format(
+                        #         self.context.absolute_url(),
+                        #         urlencode(params)
+                        # )
+    
+                        confirm_message = f"""{confirm_text}
+    {confirm_url}
+                        """ 
+
+                        api.portal.send_email(
+                            recipient=email,
+                            subject="Confirm your subscription",
+                            body=confirm_message,
+                        )
+                    else:
+                        messages.add("Already subscribed or not valid.", type="warning")
         else:
             messages.add("Email is required.", type="error")
         return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
 
     def _handle_remove(self):
-        email = self.request.form.get('email', '').strip().lower()
+        raw_email = self.request.form.get('email', '')
         messages = IStatusMessage(self.request)
-        storage = self._get_storage()
-        if email:
-            for email in email.split():
-                if email and email in storage:
-                    storage.remove(email)
-                    messages.add("Unsubscribed successfully.", type="info")
-                else:
-                    messages.add("Email not found or invalid.", type="warning")
-        else:
-            messages.add("Email not found or invalid.", type="warning")
-        return self.request.response.redirect(self.context.absolute_url() + self.redirect_view() )
+        subscribers = self._get_subscribers()
+        unsubscribers = self._get_unsubscribers()
 
+        emails = [e.strip().lower() for e in raw_email.split() if e.strip()]
+
+        if not emails:
+            messages.add("Email not found or invalid.", type="warning")
+            return self.request.response.redirect(
+                self.context.absolute_url() + self.redirect_view()
+            )
+
+        
+        for email in emails:
+            if not self.is_probably_email(email):
+                messages.add(f"{email}: invalid email.", type="warning")
+                continue
+
+            # find matching entries
+            matches = [item for item in subscribers if item.get('email', '').lower() == email]
+            
+            if not matches:
+                messages.add(f"{email}: not found.", type="warning")
+            
+            
+            if matches:
+                for item in matches:
+                    subscribers.remove(item)
+                messages.add(f"{email}: unsubscribed successfully.", type="info")
+                unsubscribers.append({
+                        'email': item['email'],
+                        'created': item['created'],
+                        'status': item['status']
+                    })
+            
+
+        return self.request.response.redirect(
+            self.context.absolute_url() + self.redirect_view()
+        )
+          
+    def export_excel(self):
+        # Create workbook and sheets
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = "Subscribers"
+        ws2 = wb.create_sheet("Unsubscribers")
+
+        # Fill Subscribers sheet
+        ws1.append(["E-mail", "Aangemeld", "Status"])
+        for sub in self.subscribers():
+            ws1.append([sub["email"], sub["created"].strftime("%Y-%m-%d"), sub.get("status", "")])
+
+        # Fill Unsubscribers sheet
+        ws2.append(["E-mail", "Aangemeld", "Status"])
+        for unsub in self.unsubscribers():
+            ws2.append([unsub["email"], unsub["created"].strftime("%Y-%m-%d"), sub.get("status", "")])
+
+        # Save workbook to BytesIO
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        # Return as HTTP response
+        response = self.request.response
+        response.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response.setHeader(
+            "Content-Disposition",
+            "attachment; filename=subscribers.xlsx"
+        )
+        response.write(output.read())
+        return b""
     
+    
+    def import_excel(self, fileobj):    
+        messages = IStatusMessage(self.request)
+        
+        # Get uploaded file
+        import pdb; pdb.set_trace()
+        fileobj = self.request.form.get('excel_file')
+        if not fileobj or isinstance(fileobj, str):
+            messages.add("No file uploaded", type="error")
+            return
+
+        # Read file into pandas
+        file_bytes = fileobj.read()
+        file_stream = io.BytesIO(file_bytes)
+        try:
+            df = pd.read_excel(file_stream)
+        except Exception as e:
+            messages.add(f"Error reading Excel: {e}", type="error")
+            return
+
+        # Normalize column names: lowercase, strip spaces
+        df.columns = [str(c).strip().lower() for c in df.columns]
+        
+        # Map expected columns
+        col_email = next((c for c in df.columns if "e-mail" in c.lower()), None)
+        col_joined = next((c for c in df.columns if "aangemeld" in c.lower()), None)
+        col_status = next((c for c in df.columns if "status" in c.lower()), None)
+
+        if not col_email:
+            messages.add("No 'email' column found in Excel", type="error")
+            if not col_email:
+                messages.add("No 'email' column found in Excel", type="error")
+                return
+
+        
+        
+        if col_joined is None:
+            df["joined"] = DateTime()
+            col_joined = "joined"
+        else:
+            df[col_joined] = df[col_joined].apply(lambda x: DateTime(x) if pd.notnull(x) else DateTime())
+
+        # Existing subscribers
+        subscribers = self._get_subscribers()
+        unsubscribers = self._get_unsubscribers()
+        
+         
+        
+        added = []
+        not_added = []
+        mailformed = []
+        for _, row in df.iterrows():
+            email = row[col_email]
+            joined = row[col_joined]
+            status = row[col_status]
+             
+            
+                
+            if not status or str(status) == 'nan':
+                status = ""
+            
+            if email and self.is_probably_email(email):
+                exists = any(item.get("email") == email for item in subscribers + unsubscribers)
+                if not exists:
+                    subscribers.append({
+                        "email": email,
+                        "created": joined,
+                        "status": status
+                    })
+                    added.append(email)
+                else:
+                    not_added.append(email)    
+            else:
+                messages.add(f"Not added (probably mailformed): {email}:", type="error")
+        
+        if added:
+            messages.add(f"Successfully subscribed: {(", ").join(added)}: ", type="info")
+        messages.add(f"Not added (already exists or is on unsubscribe list): {(", ").join(not_added)}.", type="warning")    
+
+        return self.request.response.redirect(
+            self.context.absolute_url() + self.redirect_view()
+        )
+           
     
 class ManageSubscribersView(SubscribeView):
     template = ViewPageTemplateFile('manage_subscribers.pt') 
@@ -83,5 +399,11 @@ class ManageSubscribersView(SubscribeView):
     
     def subscribers(self):
         #TO DO, get this from utils
-        return sorted(self._get_storage())
+        data = self._get_subscribers()
+        return sorted(data, key=lambda x: x['email']) 
     
+    def unsubscribers(self):
+        #TO DO, get this from utils
+        data = self._get_unsubscribers()
+        return sorted(data, key=lambda x: x['email']) 
+ 
